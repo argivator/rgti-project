@@ -11,6 +11,12 @@ var playerVertexPositionBuffer = null;
 var playerVertexTextureCoordBuffer = null;
 var playerVertexIndexBuffer = null;
 
+var zombieVertexPositionBuffer = null;
+var zombieVertexTextureCoordBuffer = null;
+var zombieVertexIndexBuffer = null;
+
+var zombies = [];
+
 // Model-View and Projection matrices
 var mvMatrixStack = [];
 var mvMatrix = mat4.create();
@@ -59,7 +65,40 @@ var playerTexture;
 var playerSpeed = 0.02;
 
 
+// objekt Zombie
 
+function Zombie(X, Y){
+  this.x = X;
+  this.y = Y;
+}
+Zombie.prototype.draw = function(x, y){
+  mvPushMatrix();
+  
+      //var x = zombies[i].x;
+      //var y = zombies[i].y;
+
+
+      mat4.identity(mvMatrix);
+      mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
+      mat4.translate(mvMatrix, [x, 0, y]);
+      
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, zombieTexture);
+      gl.uniform1i(shaderProgram.samplerUniform, 0);
+    
+      gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexTextureCoordBuffer);
+      gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, zombieVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+      gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexPositionBuffer);
+      gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, zombieVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, zombieVertexIndexBuffer);
+      setMatrixUniforms();
+      gl.drawElements(gl.TRIANGLES, zombieVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+      //console.log("pushed real good");
+  
+      mvPopMatrix();
+}
 function mvPushMatrix() {
   var copy = mat4.create();
   mat4.set(mvMatrix, copy);
@@ -195,6 +234,13 @@ function setMatrixUniforms() {
   gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
   gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        TEXTURES
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function initTextures() {
   grassTexture = gl.createTexture();
   grassTexture.image = new Image();
@@ -209,6 +255,15 @@ function initTextures() {
     handleTextureLoaded(playerTexture);
   }
   playerTexture.image.src = "./assets/lego.png";
+
+  // za zombije
+  
+  zombieTexture = gl.createTexture();
+  zombieTexture.image = new Image();
+  zombieTexture.image.onload = function() {
+    handleTextureLoaded(zombieTexture);
+  }
+  zombieTexture.image.src = "./assets/lego.png";
 }
 
 function handleTextureLoaded(texture) {
@@ -228,7 +283,11 @@ function handleTextureLoaded(texture) {
 }
 
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        LOAD WORLD
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // funkcija za nalaganje sveta (podn)
 function loadWorld() {
   //koordinate velikosti/oblike sveta
@@ -266,6 +325,11 @@ function loadWorld() {
   worldVertexTextureCoordBuffer.numItems = 6;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        LOAD PLAYER
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // funkcija za nalaganje igralca (zaenkrat kocke :) )
 function loadPlayer() {
   var scP = 0.05;  //velikost kocke
@@ -378,7 +442,172 @@ function loadPlayer() {
   playerVertexIndexBuffer.numItems = 36;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        INIT/LOAD ZOMBIES
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function initZombies(){
+  var zombies = 16;
+  for(var i = 0; i < zombies; i++){
+    var st = Math.floor((Math.random() * 8) + 1);
+    initZombie(st);
+    }
+}
+function loadZombie(){
+    mvPushMatrix();
+  
+    var scP = 0.15;  //velikost kocke
+    var vertexPositions = [
+       // Front face
+       -scP, 0,  scP,
+       scP, 0,  scP,
+       scP,  scP,  scP,
+       -scP,  scP,  scP,
+  
+       // Back face
+       -scP, 0, -scP,
+       -scP,  scP, -scP,
+       scP,  scP, -scP,
+       scP, 0, -scP,
+  
+       // Top face
+       -scP,  scP, -scP,
+       -scP,  scP,  scP,
+       scP,  scP,  scP,
+       scP,  scP, -scP,
+  
+       // Bottom face
+       -scP, 0, -scP,
+       scP, 0, -scP,
+       scP, 0,  scP,
+       -scP, 0,  scP,
+  
+       // Right face
+       scP, 0, -scP,
+       scP,  scP, -scP,
+       scP,  scP,  scP,
+       scP, 0,  scP,
+  
+       // Left face
+       -scP, 0, -scP,
+       -scP, 0,  scP,
+       -scP,  scP,  scP,
+       -scP,  scP, -scP
+    ];
+  
+    // ustcarjanje bufferja za zombie
+    zombieVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexPositionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositions), gl.STATIC_DRAW);
+    zombieVertexPositionBuffer.itemSize = 3;
+    zombieVertexPositionBuffer.numItems = 24;
+  
+    // koordinate texture kocke (lego face)
+    var textureCoords = [
+      // Front face
+      0.0, 0.0,
+      1.0, 0.0,
+      1.0, 1.0,
+      0.0, 1.0,
+  
+      // Back face
+      1.0, 0.0,
+      1.0, 1.0,
+      0.0, 1.0,
+      0.0, 0.0,
+  
+      // Top face
+      0.0, 1.0,
+      0.0, 0.0,
+      1.0, 0.0,
+      1.0, 1.0,
+  
+  
+  
+      // Bottom face
+      1.0, 1.0,
+      0.0, 1.0,
+      0.0, 0.0,
+      1.0, 0.0,
+  
+      // Right face
+      1.0, 0.0,
+      1.0, 1.0,
+      0.0, 1.0,
+      0.0, 0.0,
+  
+      // Left face
+      0.0, 0.0,
+      1.0, 0.0,
+      1.0, 1.0,
+      0.0, 1.0
+    ];
+  
+    // ustvarjanje bufferja za lego face
+    zombieVertexTextureCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexTextureCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+    zombieVertexTextureCoordBuffer.itemSize = 2;
+    zombieVertexTextureCoordBuffer.numItems = 24;
+  
+    // buffer ki naredi trikotnike iz koordinat kocke
+    zombieVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, zombieVertexIndexBuffer);
+    var zombieVertexIndices = [
+      0, 1, 2,      0, 2, 3,    // Front face
+      4, 5, 6,      4, 6, 7,    // Back face
+      8, 9, 10,     8, 10, 11,  // Top face
+      12, 13, 14,   12, 14, 15, // Bottom face
+      16, 17, 18,   16, 18, 19, // Right face
+      20, 21, 22,   20, 22, 23  // Left face
+    ];
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(zombieVertexIndices), gl.STATIC_DRAW);
+    zombieVertexIndexBuffer.itemSize = 1;
+    zombieVertexIndexBuffer.numItems = 36;
+  
+    mvPopMatrix();
+}
+function initZombie(idx){
+  console.log("klic za indeks: " + idx);
+  switch(idx){
+    case 1:
+      zombies.push(new Zombie(2.8, 2.8));  // spodi desno
+      break;
+    case 2:
+      zombies.push(new Zombie(2.8, -2.8)); // zgori desno
+      break;
+    case 3:
+     zombies.push(new Zombie(-2.8, 2.8)); // spodi levo
+      break;
+    case 4:
+      zombies.push(new Zombie(-2.8, -2.8)); // zgori levo
+      break;
+    case 5:
+      zombies.push(new Zombie(0, 2.8)); // sredina spodi
+      break;
+    case 6:
+      zombies.push(new Zombie(0, -2.8)); // sredina zgori
+      break;
+    case 7:
+      zombies.push(new Zombie(-2.8, 0)); // levo sredina
+      break;
+    case 8:
+      zombies.push(new Zombie( 2.8, 0)); // desno sredina
+      break;
+    default:
+      break;
+  }
+  
 
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        DRAW SCENE
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // drawScene
 //
@@ -443,9 +672,28 @@ function drawScene() {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, playerVertexIndexBuffer);
   setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, playerVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+  // izris zombijev
+  var zombieMS = 0.001;
+  for(var i in zombies){
+    //zombies[i].draw();
+    zombies[i].draw(zombies[i].x, zombies[i].y);
+    // random
+    /*
+    zombies[i].x += Math.random() < 0.5 ? -0.01 : 0.01;
+    zombies[i].y += Math.random() < 0.5 ? -0.01 : 0.01;*/
+    if(zombies[i].x < playerMovementLR) zombies[i].x += zombieMS;
+    else zombies[i].x -= zombieMS;
+    if(zombies[i].y < playerMovementUpDown) zombies[i].y += zombieMS;
+    else zombies[i].y -= zombieMS;
+  }
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        KEYS
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Keyboard handling helper functions
 //
 // handleKeyDown    ... called on keyDown event
@@ -573,7 +821,11 @@ function handleKeys() {
 
 
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        CAMERA
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //change camera
 
   if (currentlyPressedKeys[86]) {
@@ -609,7 +861,11 @@ function cameraMovement() {
     cameraRotationY = fullViewCameraRotationY;
   }
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        START
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // start
 function start() {
   canvas = document.getElementById("glcanvas");
@@ -632,13 +888,15 @@ function start() {
     initTextures();
     loadPlayer();
     loadWorld();
+    loadZombie();
+    initZombies();
     // Bind keyboard handling functions to document handlers
     document.onkeydown = handleKeyDown;
     document.onkeyup = handleKeyUp;
 
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
-      if (texturesLoaded == 2) {
+      if (texturesLoaded == 3) {
         handleKeys();
         cameraMovement();
         drawScene();
