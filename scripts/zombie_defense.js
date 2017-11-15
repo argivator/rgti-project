@@ -3,6 +3,9 @@ var canvas;
 var gl;
 var shaderProgram;
 
+
+var counterShowConsole = 0;
+
 // Buffers
 var worldVertexPositionBuffer = null;
 var worldVertexTextureCoordBuffer = null;
@@ -16,6 +19,7 @@ var zombieVertexTextureCoordBuffer = null;
 var zombieVertexIndexBuffer = null;
 
 var zombies = [];
+var zombieMS = 0;
 
 // Model-View and Projection matrices
 var mvMatrixStack = [];
@@ -569,7 +573,7 @@ function loadZombie(){
     mvPopMatrix();
 }
 function initZombie(idx){
-  console.log("klic za indeks: " + idx);
+  //console.log("klic za indeks: " + idx);
   switch(idx){
     case 1:
       zombies.push(new Zombie(2.8, 2.8));  // spodi desno
@@ -655,10 +659,29 @@ function drawScene() {
   setMatrixUniforms();
   gl.drawArrays(gl.TRIANGLES, 0, worldVertexPositionBuffer.numItems);
 
+  // preventiva da gre igralec iz trave
+  if(playerMovementLR > 3) playerMovementLR = 3;
+  if(playerMovementLR < -3) playerMovementLR = -3;
 
+  if(playerMovementUpDown > 3) playerMovementUpDown = 3;
+  if(playerMovementUpDown < -3) playerMovementUpDown = -3;
 
   // izris igralca (zaenkrat kocke)
   mat4.translate(mvMatrix, [playerMovementLR, 0, playerMovementUpDown]);
+  
+
+
+  // izpisemo v console X in Y pozicijo igralca vsakih 500 klicov metode drawScene ( ZA POMOČ )
+  if(counterShowConsole > 500){
+    
+    console.log("Trenutna pozicija: " + playerMovementLR + " " + playerMovementUpDown);
+    counterShowConsole = 0;
+  }else{
+    counterShowConsole += 1;
+  }
+
+
+
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, playerTexture);
   gl.uniform1i(shaderProgram.samplerUniform, 0);
@@ -674,7 +697,13 @@ function drawScene() {
   gl.drawElements(gl.TRIANGLES, playerVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
   // izris zombijev
-  var zombieMS = 0.001;
+
+  // da zombiji ne hodijo skos enako hitro, ampak v valih (kot koraki)
+  if(zombieMS < 0.005) zombieMS += 0.0001;
+  else zombieMS = 0.0005;
+
+
+
   for(var i in zombies){
     //zombies[i].draw();
     zombies[i].draw(zombies[i].x, zombies[i].y);
