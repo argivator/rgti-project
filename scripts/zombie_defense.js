@@ -67,7 +67,14 @@ var grassTexture;
 var playerTexture;
 
 var playerSpeed = 0.02;
+// generiranje random stevil znotraj mej prvi in drugi (tudi randomly negativno)
 
+var generirajStevilo = function(prvi, drugi){
+  var stevilo = ((Math.random() * drugi) + prvi);
+  var neg = Math.random();
+  if(neg < 0.5) stevilo = stevilo * -1;
+  return stevilo;
+}
 
 // objekt Zombie
 
@@ -574,30 +581,33 @@ function loadZombie(){
 }
 function initZombie(idx){
   //console.log("klic za indeks: " + idx);
+  var randomSt1 = generirajStevilo(0, 0.5);
+  var randomSt2 = generirajStevilo(0, 0.5);
+  //console.log(randomSt1 + " " + randomSt2);
   switch(idx){
     case 1:
-      zombies.push(new Zombie(2.8, 2.8));  // spodi desno
+      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2));  // spodi desno
       break;
     case 2:
-      zombies.push(new Zombie(2.8, -2.8)); // zgori desno
+      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2)); // zgori desno
       break;
     case 3:
-     zombies.push(new Zombie(-2.8, 2.8)); // spodi levo
+     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2)); // spodi levo
       break;
     case 4:
-      zombies.push(new Zombie(-2.8, -2.8)); // zgori levo
+      zombies.push(new Zombie(-2.8+ randomSt1, -2.8 + randomSt2)); // zgori levo
       break;
     case 5:
-      zombies.push(new Zombie(0, 2.8)); // sredina spodi
+      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2)); // sredina spodi
       break;
     case 6:
-      zombies.push(new Zombie(0, -2.8)); // sredina zgori
+      zombies.push(new Zombie(0+ randomSt1, -2.8 + randomSt2)); // sredina zgori
       break;
     case 7:
-      zombies.push(new Zombie(-2.8, 0)); // levo sredina
+      zombies.push(new Zombie(-2.8+ randomSt1, 0 + randomSt2)); // levo sredina
       break;
     case 8:
-      zombies.push(new Zombie( 2.8, 0)); // desno sredina
+      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2)); // desno sredina
       break;
     default:
       break;
@@ -711,10 +721,53 @@ function drawScene() {
     /*
     zombies[i].x += Math.random() < 0.5 ? -0.01 : 0.01;
     zombies[i].y += Math.random() < 0.5 ? -0.01 : 0.01;*/
-    if(zombies[i].x < playerMovementLR) zombies[i].x += zombieMS;
-    else zombies[i].x -= zombieMS;
-    if(zombies[i].y < playerMovementUpDown) zombies[i].y += zombieMS;
-    else zombies[i].y -= zombieMS;
+    var st1 = generirajStevilo(0, 1);
+    var st2 = generirajStevilo(0, 1);
+    var treshold = 0.5; // ce bo random generirano stevilo med 0 in 1 manjse od tresholda se bo naredu pozitivni premik, drugac negativni
+                        // (malo bolj random)
+    if(zombies[i].x < playerMovementLR) {
+      if(st1 < treshold){
+        zombies[i].x += zombieMS;
+      }else{
+        zombies[i].x -= zombieMS; 
+      }
+      
+    }
+    else {
+      if(st1 < treshold){
+        zombies[i].x -= zombieMS;
+      }else{
+        zombies[i].x += zombieMS; 
+      } 
+    }
+    if(zombies[i].y < playerMovementUpDown){
+      if(st2 < treshold){
+        zombies[i].y += zombieMS;
+      }else{
+        zombies[i].y -= zombieMS;
+      }
+      
+    } else{
+      if(st2 < treshold){
+        zombies[i].y -= zombieMS;
+      }else{
+        zombies[i].y += zombieMS;
+      }
+    }
+    if(zombies[i].x == playerMovementLR){
+      if(st1 < treshold){
+        zombies[i].x -= zombieMS;
+      }else{
+        zombies[i].x += zombieMS; 
+      } 
+    }
+    if(zombies[i].y == playerMovementUpDown){
+      if(st2 < treshold){
+        zombies[i].y += zombieMS;
+      }else{
+        zombies[i].y -= zombieMS;
+      }
+    }
   }
 }
 
