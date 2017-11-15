@@ -267,7 +267,7 @@ function initTextures() {
   zombieTexture.image.onload = function() {
     handleTextureLoaded(zombieTexture);
   }
-  zombieTexture.image.src = "./assets/lego.png";
+  zombieTexture.image.src = "./assets/zombie.png";
 }
 
 function handleTextureLoaded(texture) {
@@ -296,13 +296,13 @@ function handleTextureLoaded(texture) {
 function loadWorld() {
   //koordinate velikosti/oblike sveta
   var vertexPositions = [
-     -3, 0, -3,
-     -3, 0,  3,
-      3, 0,  3,
+     -10, 0, -4,
+     -10, 0,  10,
+      10, 0,  10,
 
-     -3, 0, -3,
-      3, 0, -3,
-      3, 0,  3];
+     -10, 0, -4,
+      10, 0, -4,
+      10, 0,  10];
 
   //koordinate texture sveta (vecje stevilke (trenutno 5) ---> veckrat ponovljena textura)
   var vertexTextureCoords = [
@@ -660,10 +660,10 @@ function drawScene() {
   gl.drawArrays(gl.TRIANGLES, 0, worldVertexPositionBuffer.numItems);
 
   // preventiva da gre igralec iz trave
-  if(playerMovementLR > 3) playerMovementLR = 3;
-  if(playerMovementLR < -3) playerMovementLR = -3;
+  if(playerMovementLR > 3.35) playerMovementLR = 3.35;
+  if(playerMovementLR < -3.35) playerMovementLR = -3.35;
 
-  if(playerMovementUpDown > 3) playerMovementUpDown = 3;
+  if(playerMovementUpDown > 4) playerMovementUpDown = 4;
   if(playerMovementUpDown < -3) playerMovementUpDown = -3;
 
   // izris igralca (zaenkrat kocke)
@@ -903,7 +903,7 @@ function start() {
 
   // Only continue if WebGL is available and working
   if (gl) {
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);                      // Set clear color to black, fully opaque
+    gl.clearColor(0.52, 0.81, 0.92, 1.0);                      // Set clear color to black, fully opaque
     gl.clearDepth(1.0);                                     // Clear everything
     gl.enable(gl.DEPTH_TEST);                               // Enable depth testing
     gl.depthFunc(gl.LEQUAL);                                // Near things obscure far things
