@@ -734,6 +734,7 @@ function drawScene() {
         var zombieMStmp = zombieMS * (playerMovementLR - zombies[i].x);
       //}
       if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
+      if(zombieMS < 0.001) zombieMS = 0.001;
       if(st1 < treshold){
         
         zombies[i].x += zombieMS;
@@ -747,6 +748,7 @@ function drawScene() {
       
         var zombieMStmp = zombieMS * (zombies[i].x - playerMovementLR);
         if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
+        if(zombieMS < 0.001) zombieMS = 0.001;
       
       if(st1 < treshold){
         zombies[i].x -= zombieMS;
@@ -760,6 +762,8 @@ function drawScene() {
       var tmpZS = zombieMS;
       var zombieMStmp = zombieMS * (playerMovementUpDown - zombies[i].y);
       if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
+      if(zombieMS < 0.001) zombieMS = 0.001;
+
       if(st2 < treshold){
         zombies[i].y += zombieMS;
       }else{
@@ -770,6 +774,8 @@ function drawScene() {
       var tmpZS = zombieMS;
       var zombieMStmp = zombieMS * (zombies[i].y - playerMovementUpDown);
       if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
+      if(zombieMS < 0.001) zombieMS = 0.001;
+
       if(st2 < treshold){
         zombies[i].y -= zombieMS;
       }else{
