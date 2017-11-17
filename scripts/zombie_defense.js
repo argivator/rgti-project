@@ -628,6 +628,7 @@ function initZombie(idx){
 // Draw the scene.
 //
 function drawScene() {
+  //console.log("draw scene");
   // set the rendering environment to full canvas size
   gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
@@ -725,34 +726,56 @@ function drawScene() {
     var st2 = generirajStevilo(0, 1);
     var treshold = 0.5; // ce bo random generirano stevilo med 0 in 1 manjse od tresholda se bo naredu pozitivni premik, drugac negativni
                         // (malo bolj random)
+    
     if(zombies[i].x < playerMovementLR) {
+      //console.log(playerMovementLR - zombies[i].x);
+      var tmpZS = zombieMS;
+      //if((playerMovementLR - zombies[i].x) < 0.2){
+        var zombieMStmp = zombieMS * (playerMovementLR - zombies[i].x);
+      //}
+      if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
       if(st1 < treshold){
+        
         zombies[i].x += zombieMS;
       }else{
         zombies[i].x -= zombieMS; 
       }
-      
+      zombieMS = tmpZS;
     }
     else {
+        var tmpZS = zombieMS;
+      
+        var zombieMStmp = zombieMS * (zombies[i].x - playerMovementLR);
+        if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
+      
       if(st1 < treshold){
         zombies[i].x -= zombieMS;
       }else{
         zombies[i].x += zombieMS; 
-      } 
+      }
+      zombieMS = tmpZS;
     }
+
     if(zombies[i].y < playerMovementUpDown){
+      var tmpZS = zombieMS;
+      var zombieMStmp = zombieMS * (playerMovementUpDown - zombies[i].y);
+      if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
       if(st2 < treshold){
         zombies[i].y += zombieMS;
       }else{
         zombies[i].y -= zombieMS;
       }
-      
+      zombieMS = tmpZS;
     } else{
+      var tmpZS = zombieMS;
+      var zombieMStmp = zombieMS * (zombies[i].y - playerMovementUpDown);
+      if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
       if(st2 < treshold){
         zombies[i].y -= zombieMS;
       }else{
         zombies[i].y += zombieMS;
       }
+      zombieMS = tmpZS;
     }
     if(zombies[i].x == playerMovementLR){
       if(st1 < treshold){
