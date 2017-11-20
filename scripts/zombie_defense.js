@@ -18,12 +18,14 @@ var zombieVertexPositionBuffer = null;
 var zombieVertexTextureCoordBuffer = null;
 var zombieVertexIndexBuffer = null;
 
-var zombiesNr = 8;
+// zombie configurations
+var zombiesNr = 5;
 var zombies = [];
 var zombieMS = 0;
 var zombieXsmer = 1;
 var zombieYsmer = 1;
 var spremenjeno = 0;
+var maxHitrostZombijev = 0.04;
 
 // Model-View and Projection matrices
 var mvMatrixStack = [];
@@ -616,19 +618,19 @@ function initZombie(idx){
   var defaultMovement = 0.01;
   switch(idx){
     case 1:
-      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2, 1, 1, defaultMovement));  // spodi desno
+      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2, -1, -1, defaultMovement));  // spodi desno
       break;
     case 2:
-      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // zgori desno
+      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2, -1, 1, defaultMovement)); // zgori desno
       break;
     case 3:
-     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2, 1, 1, defaultMovement)); // spodi levo
+     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2, 1, -1, defaultMovement)); // spodi levo
       break;
     case 4:
       zombies.push(new Zombie(-2.8+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // zgori levo
       break;
     case 5:
-      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2, 1, 1, defaultMovement)); // sredina spodi
+      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2, 1, -1, defaultMovement)); // sredina spodi
       break;
     case 6:
       zombies.push(new Zombie(0+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // sredina zgori
@@ -637,7 +639,7 @@ function initZombie(idx){
       zombies.push(new Zombie(-2.8+ randomSt1, 0 + randomSt2, 1, 1, defaultMovement)); // levo sredina
       break;
     case 8:
-      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2, 1, 1, defaultMovement)); // desno sredina
+      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2, -1, 1, defaultMovement)); // desno sredina
       break;
     default:
       break;
@@ -751,21 +753,21 @@ function drawScene() {
 
 
     // PREMIKANJE ZOMBIJEV (sory za grdo kodo rip :(
-    // random
-    /*
-    zombies[i].x += Math.random() < 0.5 ? -0.01 : 0.01;
-    zombies[i].y += Math.random() < 0.5 ? -0.01 : 0.01;*/
+
     var st1 = generirajStevilo(0, 1);
     var st2 = generirajStevilo(0, 1);
     var treshold = 0.5; // ce bo random generirano stevilo med 0 in 1 manjse od tresholda se bo naredu pozitivni premik, drugac negativni
                         // (malo bolj random)
     
-    if(zombies[i].ms >= 0.015){
+    if(zombies[i].ms >= maxHitrostZombijev){
       // se spremeni smer kam skacejo
       //console.log(zombies[i].x +  " and " + playerMovementLR);
       if(zombies[i].x < playerMovementLR){
+
+
         zombies[i].smerX = 1;
       }else{
+
         zombies[i].smerX = -1;
 
       }
@@ -778,27 +780,46 @@ function drawScene() {
       }
       //console.log("skok");
       zombies[i].ms = 0.00001;
-      zombieMS = 0.0001;
+      
     }
-    //else{
 
+      var deltaX;
+      var deltaY;
       if(zombies[i].smerX == 1){
-
-        zombies[i].x += zombies[i].ms;
-      }else if(zombies[i].smerX == -1){
-
-        zombies[i].x -= zombies[i].ms;
+        deltaX = (playerMovementLR - zombies[i].x);
+      }else{
+        deltaX = (zombies[i].x - playerMovementLR);
       }
 
       if(zombies[i].smerY == 1){
-
-        zombies[i].y += zombies[i].ms;
-      }else if(zombies[i].smerY == -1){
-
-        zombies[i].y -= zombies[i].ms;
+        deltaY = playerMovementUpDown - zombies[i].y;
+      }else{
+        deltaY = zombies[i].y - playerMovementUpDown;
       }
 
-      zombies[i].ms += 0.001;
+      // console.log(deltaX +  " " + deltaY); // vecji kot je delta vecji more bit ms v tej smeri!
+
+      var vsotaObeh = deltaX + deltaY;
+
+      var spremembaX = deltaX / vsotaObeh;
+      var spremembaY = deltaY / vsotaObeh;
+
+      var test = spremembaX + spremembaY;
+      //console.log("Vsota: " + vsotaObeh + ", X + Y: " + test);
+
+      if(zombies[i].smerX == 1){
+        zombies[i].x += zombies[i].ms * spremembaX;
+      }else{
+        zombies[i].x -= zombies[i].ms * spremembaX;
+      }
+      if(zombies[i].smerY == 1){
+        zombies[i].y += zombies[i].ms * spremembaY;
+      }else{
+        zombies[i].y -= zombies[i].ms * spremembaY;
+      }
+
+
+      zombies[i].ms += 0.002; // TO SPREMENI ZA 'SKAKANJE'
       //console.log(zombieMS);
 
 
