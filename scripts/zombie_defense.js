@@ -18,8 +18,12 @@ var zombieVertexPositionBuffer = null;
 var zombieVertexTextureCoordBuffer = null;
 var zombieVertexIndexBuffer = null;
 
+var zombiesNr = 8;
 var zombies = [];
 var zombieMS = 0;
+var zombieXsmer = 1;
+var zombieYsmer = 1;
+var spremenjeno = 0;
 
 // Model-View and Projection matrices
 var mvMatrixStack = [];
@@ -78,19 +82,44 @@ var generirajStevilo = function(prvi, drugi){
 
 // objekt Zombie
 
-function Zombie(X, Y){
+function Zombie(X, Y, smerX, smerY, ms){
   this.x = X;
   this.y = Y;
+  this.smerX = smerX;
+  this.smerY = smerY;
+  this.ms = ms;
 }
-Zombie.prototype.draw = function(x, y){
+Zombie.prototype.draw = function(x, y, smerX, smerY){
   mvPushMatrix();
   
       //var x = zombies[i].x;
       //var y = zombies[i].y;
+      var x = this.x;
+      var y = this.y;
 
 
       mat4.identity(mvMatrix);
       mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
+
+      // v ktero smer obrnjen:
+      var smerX = this.smerX;
+      var smerY = this.smerY;
+      
+      /*if(smerX == 1 && smerY == 1){
+        mat4.rotateY(mvMatrix, degToRad(-45));
+      }
+      if(smerX == 1 && smerY == -1){
+        mat4.rotateY(mvMatrix, degToRad(45));
+      }
+      if(smerX == -1 && smerY == 1){
+        mat4.rotateY(mvMatrix, degToRad(-135));
+      }
+      if(smerX == -1 && smerY == -1){
+        mat4.rotateY(mvMatrix, degToRad(135));
+      }*/
+
+
+      
       mat4.translate(mvMatrix, [x, 0, y]);
       
       gl.activeTexture(gl.TEXTURE0);
@@ -459,8 +488,8 @@ function loadPlayer() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function initZombies(){
-  var zombies = 16;
-  for(var i = 0; i < zombies; i++){
+  
+  for(var i = 0; i < zombiesNr; i++){
     var st = Math.floor((Math.random() * 8) + 1);
     initZombie(st);
     }
@@ -584,30 +613,31 @@ function initZombie(idx){
   var randomSt1 = generirajStevilo(0, 0.5);
   var randomSt2 = generirajStevilo(0, 0.5);
   //console.log(randomSt1 + " " + randomSt2);
+  var defaultMovement = 0.01;
   switch(idx){
     case 1:
-      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2));  // spodi desno
+      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2, 1, 1, defaultMovement));  // spodi desno
       break;
     case 2:
-      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2)); // zgori desno
+      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // zgori desno
       break;
     case 3:
-     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2)); // spodi levo
+     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2, 1, 1, defaultMovement)); // spodi levo
       break;
     case 4:
-      zombies.push(new Zombie(-2.8+ randomSt1, -2.8 + randomSt2)); // zgori levo
+      zombies.push(new Zombie(-2.8+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // zgori levo
       break;
     case 5:
-      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2)); // sredina spodi
+      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2, 1, 1, defaultMovement)); // sredina spodi
       break;
     case 6:
-      zombies.push(new Zombie(0+ randomSt1, -2.8 + randomSt2)); // sredina zgori
+      zombies.push(new Zombie(0+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // sredina zgori
       break;
     case 7:
-      zombies.push(new Zombie(-2.8+ randomSt1, 0 + randomSt2)); // levo sredina
+      zombies.push(new Zombie(-2.8+ randomSt1, 0 + randomSt2, 1, 1, defaultMovement)); // levo sredina
       break;
     case 8:
-      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2)); // desno sredina
+      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2, 1, 1, defaultMovement)); // desno sredina
       break;
     default:
       break;
@@ -711,13 +741,16 @@ function drawScene() {
 
   // da zombiji ne hodijo skos enako hitro, ampak v valih (kot koraki)
   if(zombieMS < 0.005) zombieMS += 0.0001;
-  else zombieMS = 0.0005;
+  //else zombieMS = 0.0005; // TUKI SM SPREMENU TAK DA CE NE DELA RIP XD.
 
 
 
   for(var i in zombies){
     //zombies[i].draw();
-    zombies[i].draw(zombies[i].x, zombies[i].y);
+    
+
+
+    // PREMIKANJE ZOMBIJEV (sory za grdo kodo rip :(
     // random
     /*
     zombies[i].x += Math.random() < 0.5 ? -0.01 : 0.01;
@@ -727,76 +760,52 @@ function drawScene() {
     var treshold = 0.5; // ce bo random generirano stevilo med 0 in 1 manjse od tresholda se bo naredu pozitivni premik, drugac negativni
                         // (malo bolj random)
     
-    if(zombies[i].x < playerMovementLR) {
-      //console.log(playerMovementLR - zombies[i].x);
-      var tmpZS = zombieMS;
-      //if((playerMovementLR - zombies[i].x) < 0.2){
-        var zombieMStmp = zombieMS * (playerMovementLR - zombies[i].x);
-      //}
-      if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
-      if(zombieMS < 0.001) zombieMS = 0.001;
-      if(st1 < treshold){
-        
-        zombies[i].x += zombieMS;
+    if(zombies[i].ms >= 0.015){
+      // se spremeni smer kam skacejo
+      //console.log(zombies[i].x +  " and " + playerMovementLR);
+      if(zombies[i].x < playerMovementLR){
+        zombies[i].smerX = 1;
       }else{
-        zombies[i].x -= zombieMS; 
-      }
-      zombieMS = tmpZS;
-    }
-    else {
-        var tmpZS = zombieMS;
-      
-        var zombieMStmp = zombieMS * (zombies[i].x - playerMovementLR);
-        if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
-        if(zombieMS < 0.001) zombieMS = 0.001;
-      
-      if(st1 < treshold){
-        zombies[i].x -= zombieMS;
-      }else{
-        zombies[i].x += zombieMS; 
-      }
-      zombieMS = tmpZS;
-    }
+        zombies[i].smerX = -1;
 
-    if(zombies[i].y < playerMovementUpDown){
-      var tmpZS = zombieMS;
-      var zombieMStmp = zombieMS * (playerMovementUpDown - zombies[i].y);
-      if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
-      if(zombieMS < 0.001) zombieMS = 0.001;
+      }
+      if(zombies[i].y < playerMovementUpDown){
+        zombies[i].smerY = 1;
 
-      if(st2 < treshold){
-        zombies[i].y += zombieMS;
       }else{
-        zombies[i].y -= zombieMS;
-      }
-      zombieMS = tmpZS;
-    } else{
-      var tmpZS = zombieMS;
-      var zombieMStmp = zombieMS * (zombies[i].y - playerMovementUpDown);
-      if(zombieMStmp < zombieMS) zombieMS = zombieMStmp;
-      if(zombieMS < 0.001) zombieMS = 0.001;
+        zombies[i].smerY = -1;
 
-      if(st2 < treshold){
-        zombies[i].y -= zombieMS;
-      }else{
-        zombies[i].y += zombieMS;
       }
-      zombieMS = tmpZS;
+      //console.log("skok");
+      zombies[i].ms = 0.00001;
+      zombieMS = 0.0001;
     }
-    if(zombies[i].x == playerMovementLR){
-      if(st1 < treshold){
-        zombies[i].x -= zombieMS;
-      }else{
-        zombies[i].x += zombieMS; 
-      } 
-    }
-    if(zombies[i].y == playerMovementUpDown){
-      if(st2 < treshold){
-        zombies[i].y += zombieMS;
-      }else{
-        zombies[i].y -= zombieMS;
+    //else{
+
+      if(zombies[i].smerX == 1){
+
+        zombies[i].x += zombies[i].ms;
+      }else if(zombies[i].smerX == -1){
+
+        zombies[i].x -= zombies[i].ms;
       }
-    }
+
+      if(zombies[i].smerY == 1){
+
+        zombies[i].y += zombies[i].ms;
+      }else if(zombies[i].smerY == -1){
+
+        zombies[i].y -= zombies[i].ms;
+      }
+
+      zombies[i].ms += 0.001;
+      //console.log(zombieMS);
+
+
+
+      zombies[i].draw();
+      //zombies[i].draw(zombies[i]);
+   // }
   }
 }
 
