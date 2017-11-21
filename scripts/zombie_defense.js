@@ -18,6 +18,14 @@ var zombieVertexPositionBuffer = null;
 var zombieVertexTextureCoordBuffer = null;
 var zombieVertexIndexBuffer = null;
 
+var wallVertexPositionBuffer = null;
+var wallVertexTextureCoordBuffer = null;
+var wallVertexIndexBuffer = null;
+
+// wall config
+
+var walls = [];
+
 // zombie configurations
 var zombiesNr = 5;
 var zombies = [];
@@ -26,7 +34,7 @@ var zombieXsmer = 1;
 var zombieYsmer = 1;
 var spremenjeno = 0;
 
-var skacejo = false; // ali skacejo al monotono hodjo
+var skacejo = false; // ali skacejo al monotono hodjo (false - monotono)
 var maxHitrostZombijev = 0.01;
 
 // Model-View and Projection matrices
@@ -76,6 +84,7 @@ var texturesLoaded = 0;
 
 var grassTexture;
 var playerTexture;
+var wallTexture;
 
 var playerSpeed = 0.02;
 // generiranje random stevil znotraj mej prvi in drugi (tudi randomly negativno)
@@ -301,6 +310,16 @@ function initTextures() {
     handleTextureLoaded(zombieTexture);
   }
   zombieTexture.image.src = "./assets/zombie.png";
+
+  // za zide
+
+  wallTexture = gl.createTexture();
+  wallTexture.image = new Image();
+  wallTexture.image.onload = function(){
+    handleTextureLoaded(wallTexture);
+  }
+  wallTexture.image.src = "./assets/wall.png";
+
 }
 
 function handleTextureLoaded(texture) {
@@ -360,6 +379,119 @@ function loadWorld() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexTextureCoords), gl.STATIC_DRAW);
   worldVertexTextureCoordBuffer.itemSize = 2;
   worldVertexTextureCoordBuffer.numItems = 6;
+
+  // zidovi
+  var xm = -1.75; // X minimum
+  var xb = -1;    // X maximum
+  var zm = -1.6;  // Z minimum
+  var zb = 0.4;   // Z maximum
+  var v = 2;      // visina
+  var wallVertexes = [
+    // front
+    /*
+    -1.75, 0, -1.6,
+    -1,    0, -1.6,
+    -1,    2, -1.6,
+    -1.75, 2, -1.6,
+    */
+    xm, 0, zm,
+    xb, 0, zm,
+    xb, v, zm,
+    xm, v, zm,
+    //side right
+
+    xb, 0, zm,
+    xb, 0, zb,
+    xb, v, zb,
+    xb, v, zm,
+
+    // back
+
+    xb, 0, zb,
+    xm, 0, zb,
+    xm, v, zb,
+    xb, v, zb,
+
+    // left
+    xm, 0, zb,
+    xm, 0, zm,
+    xm, v, zm,
+    xm, v, zb,
+
+    // top
+    xb, v, zm,
+    xb, v, zb,
+    xm, v, zb,
+    xm, v, zm,
+
+    // bottom
+    xb, 0, zm,
+    xb, 0, zb,
+    xm, 0, zb,
+    xm, 0, zm
+
+  ];
+
+  wallVertexPositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexPositionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(wallVertexes), gl.STATIC_DRAW);
+  wallVertexPositionBuffer.itemSize = 3;
+  wallVertexPositionBuffer.numItems = 24;
+
+  var wallTextures = [
+    // front
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // right
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    // back
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    // left
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // top
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    // bottom
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0
+  ];
+
+  wallVertexTextureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexTextureCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(wallTextures), gl.STATIC_DRAW);
+  wallVertexPositionBuffer.itemSize = 2;
+  wallVertexTextureCoordBuffer.numItems = 24;
+
+  wallVertexIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wallVertexIndexBuffer);
+  var wallVertexIndices = [
+    0, 1, 2,    0, 2, 3,    // front
+    16, 17, 18,   16, 18, 19, // Right face
+    4, 5, 6,      4, 6, 7,    // Back face
+    20, 21, 22,   20, 22, 23,  // Left face
+    8, 9, 10,     8, 10, 11,  // Top face
+    12, 13, 14,   12, 14, 15 // Bottom face
+  ];
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(wallVertexIndices), gl.STATIC_DRAW);
+  wallVertexIndexBuffer.itemSize = 1;
+  wallVertexIndexBuffer.numItems = 36;
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -734,6 +866,24 @@ function drawScene() {
   setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, playerVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
+  // zidovi
+  mat4.identity(mvMatrix);
+  mat4.translate(mvMatrix, [0, 0, 0]);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexTextureCoordBuffer);
+  gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, wallVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexPositionBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, wallVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wallVertexIndexBuffer);
+  setMatrixUniforms();
+  gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  
+
   // izris zombijev
 
   // da zombiji ne hodijo skos enako hitro, ampak v valih (kot koraki)
@@ -1094,7 +1244,7 @@ function start() {
 
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
-      if (texturesLoaded == 3) {
+      if (texturesLoaded == 4) {
         handleKeys();
         cameraMovement();
         drawScene();
