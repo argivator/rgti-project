@@ -13,3 +13,7 @@ canvas {
 .tPomoci {
   border: 1px solid black;
 }
+
+#stopScoring {
+  text-align: right;
+}

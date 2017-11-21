@@ -47,6 +47,28 @@
       </canvas>
 		</div>
 		<br />
+		<p id="Score" align="right"></p>
+				<script>
+				
+				var score=0;
+				var scoreControl=1;
+				
+				// Update the count down every 1 second
+				var x = setInterval(function() {
+					if (scoreControl==1){
+						score++;
+					}
+					 document.getElementById("Score").innerHTML = "Your score is: " + score;
+				   
+				}, 1000);
+				
+				
+				function stopScore(){
+					scoreControl=0;
+					
+				}
+				</script>
+		<button id="stopScoring" onclick=stopScore()>Ustavi točkovanje</button>
 		<button id="togglePrikaz" onclick=togglePrikazPodatkov()>Prikaži pomoč</button>
 		<div class="skrito" id="pomoc">
 			POMOČ:
