@@ -25,7 +25,9 @@ var zombieMS = 0;
 var zombieXsmer = 1;
 var zombieYsmer = 1;
 var spremenjeno = 0;
-var maxHitrostZombijev = 0.04;
+
+var skacejo = false; // ali skacejo al monotono hodjo
+var maxHitrostZombijev = 0.01;
 
 // Model-View and Projection matrices
 var mvMatrixStack = [];
@@ -55,6 +57,9 @@ var playerCameraRotationY = 40;
 var playerMovementLR = 0;
 //premik "igralca" gor/dol
 var playerMovementUpDown = 0;
+//rotacija igralca
+
+var playerRotation = 0;
 
 // izbira kamere
 var camera1 = true;
@@ -84,14 +89,15 @@ var generirajStevilo = function(prvi, drugi){
 
 // objekt Zombie
 
-function Zombie(X, Y, smerX, smerY, ms){
+function Zombie(X, Y, smerX, smerY, ms, rot){
   this.x = X;
   this.y = Y;
   this.smerX = smerX;
-  this.smerY = smerY;
-  this.ms = ms;
+  this.smerY = smerY;  // smerX (1 -> x se mora večati, -1 -> x se mora manjsati) (GLEDE NA IGRALCA)
+  this.ms = ms;   // movement speed
+  this.rot = rot; // rotacija
 }
-Zombie.prototype.draw = function(x, y, smerX, smerY){
+Zombie.prototype.draw = function(rot){
   mvPushMatrix();
   
       //var x = zombies[i].x;
@@ -106,23 +112,12 @@ Zombie.prototype.draw = function(x, y, smerX, smerY){
       // v ktero smer obrnjen:
       var smerX = this.smerX;
       var smerY = this.smerY;
-      
-      /*if(smerX == 1 && smerY == 1){
-        mat4.rotateY(mvMatrix, degToRad(-45));
-      }
-      if(smerX == 1 && smerY == -1){
-        mat4.rotateY(mvMatrix, degToRad(45));
-      }
-      if(smerX == -1 && smerY == 1){
-        mat4.rotateY(mvMatrix, degToRad(-135));
-      }
-      if(smerX == -1 && smerY == -1){
-        mat4.rotateY(mvMatrix, degToRad(135));
-      }*/
+
 
 
       
       mat4.translate(mvMatrix, [x, 0, y]);
+      mat4.rotateY(mvMatrix, rot);
       
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, zombieTexture);
@@ -618,28 +613,28 @@ function initZombie(idx){
   var defaultMovement = 0.01;
   switch(idx){
     case 1:
-      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2, -1, -1, defaultMovement));  // spodi desno
+      zombies.push(new Zombie(2.8 + randomSt1, 2.8 + randomSt2, -1, -1, defaultMovement, 0));  // spodi desno
       break;
     case 2:
-      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2, -1, 1, defaultMovement)); // zgori desno
+      zombies.push(new Zombie(2.8+ randomSt1, -2.8 + randomSt2, -1, 1, defaultMovement, 0)); // zgori desno
       break;
     case 3:
-     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2, 1, -1, defaultMovement)); // spodi levo
+     zombies.push(new Zombie(-2.8+ randomSt1, 2.8 + randomSt2, 1, -1, defaultMovement, 0)); // spodi levo
       break;
     case 4:
-      zombies.push(new Zombie(-2.8+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // zgori levo
+      zombies.push(new Zombie(-2.8+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement, 0)); // zgori levo
       break;
     case 5:
-      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2, 1, -1, defaultMovement)); // sredina spodi
+      zombies.push(new Zombie(0+ randomSt1, 2.8 + randomSt2, 1, -1, defaultMovement, 0)); // sredina spodi
       break;
     case 6:
-      zombies.push(new Zombie(0+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement)); // sredina zgori
+      zombies.push(new Zombie(0+ randomSt1, -2.8 + randomSt2, 1, 1, defaultMovement, 0)); // sredina zgori
       break;
     case 7:
-      zombies.push(new Zombie(-2.8+ randomSt1, 0 + randomSt2, 1, 1, defaultMovement)); // levo sredina
+      zombies.push(new Zombie(-2.8+ randomSt1, 0 + randomSt2, 1, 1, defaultMovement, 0)); // levo sredina
       break;
     case 8:
-      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2, -1, 1, defaultMovement)); // desno sredina
+      zombies.push(new Zombie( 2.8+ randomSt1, 0 + randomSt2, -1, 1, defaultMovement, 0)); // desno sredina
       break;
     default:
       break;
@@ -710,13 +705,13 @@ function drawScene() {
   if(playerMovementUpDown < -3) playerMovementUpDown = -3;
 
   // izris igralca (zaenkrat kocke)
-  mat4.translate(mvMatrix, [playerMovementLR, 0, playerMovementUpDown]);
+  mat4.translate(mvMatrix, [playerMovementLR, 0.0, playerMovementUpDown]);
+  mat4.rotateY(mvMatrix, degToRad(playerRotation)); // rotacija
   
 
 
   // izpisemo v console X in Y pozicijo igralca vsakih 500 klicov metode drawScene ( ZA POMOČ )
   if(counterShowConsole > 500){
-    
     console.log("Trenutna pozicija: " + playerMovementLR + " " + playerMovementUpDown);
     counterShowConsole = 0;
   }else{
@@ -758,30 +753,50 @@ function drawScene() {
     var st2 = generirajStevilo(0, 1);
     var treshold = 0.5; // ce bo random generirano stevilo med 0 in 1 manjse od tresholda se bo naredu pozitivni premik, drugac negativni
                         // (malo bolj random)
-    
-    if(zombies[i].ms >= maxHitrostZombijev){
-      // se spremeni smer kam skacejo
-      //console.log(zombies[i].x +  " and " + playerMovementLR);
+    if(skacejo){
+      if(zombies[i].ms >= maxHitrostZombijev){
+        // se spremeni smer kam skacejo
+        //console.log(zombies[i].x +  " and " + playerMovementLR);
+        if(zombies[i].x < playerMovementLR){
+  
+  
+          zombies[i].smerX = 1;
+        }else{
+  
+          zombies[i].smerX = -1;
+  
+        }
+        if(zombies[i].y < playerMovementUpDown){
+          zombies[i].smerY = 1;
+  
+        }else{
+          zombies[i].smerY = -1;
+  
+        }
+        //console.log("skok");
+        zombies[i].ms = 0.00001;
+        
+      }
+    }else{
       if(zombies[i].x < playerMovementLR){
-
-
-        zombies[i].smerX = 1;
-      }else{
-
-        zombies[i].smerX = -1;
-
-      }
-      if(zombies[i].y < playerMovementUpDown){
-        zombies[i].smerY = 1;
-
-      }else{
-        zombies[i].smerY = -1;
-
-      }
-      //console.log("skok");
-      zombies[i].ms = 0.00001;
-      
+        
+        
+                zombies[i].smerX = 1;
+              }else{
+        
+                zombies[i].smerX = -1;
+        
+              }
+              if(zombies[i].y < playerMovementUpDown){
+                zombies[i].smerY = 1;
+        
+              }else{
+                zombies[i].smerY = -1;
+        
+              }
+      zombies[i].ms = maxHitrostZombijev;
     }
+    
 
       var deltaX;
       var deltaY;
@@ -806,25 +821,65 @@ function drawScene() {
 
       var test = spremembaX + spremembaY;
       //console.log("Vsota: " + vsotaObeh + ", X + Y: " + test);
-
+      var sprememba;
       if(zombies[i].smerX == 1){
-        zombies[i].x += zombies[i].ms * spremembaX;
+        sprememba = zombies[i].ms * spremembaX;
+        if(sprememba > 0.04) sprememba = 0.04;
+
+        zombies[i].x += sprememba;
       }else{
-        zombies[i].x -= zombies[i].ms * spremembaX;
+        sprememba = zombies[i].ms * spremembaX;
+        if(sprememba > 0.04) sprememba = 0.04;
+
+        zombies[i].x -= sprememba;
       }
       if(zombies[i].smerY == 1){
-        zombies[i].y += zombies[i].ms * spremembaY;
+        sprememba = zombies[i].ms * spremembaY;
+        if(sprememba > 0.04) sprememba = 0.04;
+
+        zombies[i].y += sprememba;
       }else{
-        zombies[i].y -= zombies[i].ms * spremembaY;
+        sprememba = zombies[i].ms * spremembaY;
+        if(sprememba > 0.04) sprememba = 0.04;
+
+        zombies[i].y -= sprememba;
       }
+      // DOLOCANJE ROTACIJE
+      var rot;
+      if(zombies[i].smerX == -1 && zombies[i].smerY == -1){
+        rot = Math.atan(deltaY / deltaX);
+        rot = -rot;
+        rot = rot - degToRad(90);
 
+       /* if(counterShowConsole == 100 || counterShowConsole == 400){
+          console.log(rot);
+        } */
+      }
+      if(zombies[i].smerX == 1 && zombies[i].smerY == 1){
+        rot = Math.atan(deltaY / deltaX);
+        rot = -rot;
 
-      zombies[i].ms += 0.002; // TO SPREMENI ZA 'SKAKANJE'
+      }
+      if(zombies[i].smerX == -1 && zombies[i].smerY == 1){
+        rot = Math.atan(deltaX / deltaY);
+        rot = -rot;
+        rot = rot - degToRad(90);
+
+      }
+      if(zombies[i].smerX == 1 && zombies[i].smerY == -1){
+        rot = Math.atan(deltaY / deltaX);
+      }
+      
+
+      
+
+      if(skacejo){
+        zombies[i].ms += 0.002; // TO SPREMENI ZA 'SKAKANJE'
+      }
+      
       //console.log(zombieMS);
 
-
-
-      zombies[i].draw();
+      zombies[i].draw(rot);
       //zombies[i].draw(zombies[i]);
    // }
   }
@@ -860,7 +915,7 @@ function handleKeys() {
 
   // tipke za navigacijo kamere (developer tools, kasneje izbrisemo)//
                                                                     //
-  if (currentlyPressedKeys[33]) {                                   //
+  /*if (currentlyPressedKeys[33]) {                                   //
     // Page Up                                                      //
     cameraPositionZ -= 0.05;                                        //
     console.log("Z: " + cameraPositionZ);                           //
@@ -899,7 +954,8 @@ function handleKeys() {
     //T                                                             //
     cameraRotationY += 0.05;                                        //
     console.log("R: " + cameraRotationY);                           //
-  }                                                                 //
+  }
+  */                                                             //
 //////////////////////////////////////////////////////////////////////
 
   if (currentlyPressedKeys[68] && currentlyPressedKeys[83]) {
@@ -953,13 +1009,14 @@ function handleKeys() {
       playerCameraPositionY += playerSpeed * Math.sin(degToRad(cameraRotationY));
       playerCameraPositionZ -= playerSpeed * Math.cos(degToRad(cameraRotationY));
     }
+    
   }
-
-
-
-
-
-
+  if(currentlyPressedKeys[37]){ // left
+    playerRotation -= 5;
+  }
+  if(currentlyPressedKeys[39]){ // right
+    playerRotation += 5;
+  }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
