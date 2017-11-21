@@ -45,7 +45,27 @@
       <canvas id="glcanvas" width="1600px" height="900px">
           No <code>&lt;canvas&gt;</code> suppport in your browser.
       </canvas>
-    </div>
+		</div>
+		<br />
+		<button id="togglePrikaz" onclick=togglePrikazPodatkov()>Prikaži pomoč</button>
+		<div class="skrito" id="pomoc">
+			POMOČ:
+			<table class="tPomoci">
+				<tr>
+					<td>W,A,S,D</td>
+					<td>Premikanje karakterja GOR, LEVO, DOL, DESNO</td>
+				</tr>
+				<tr>
+					<td>LEFT, RIGHT</td>
+					<td>Vrtenje karakterja LEVO, DESNO</td>
+				</tr>
+				<tr>
+					<td>V</td>
+					<td>Toggle camera view</td>
+				</tr>
+			</table>
+
+		</div>
   </body>
 
 </html>

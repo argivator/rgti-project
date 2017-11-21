@@ -1102,3 +1102,10 @@ function start() {
     }, 15);
   }
 }
+
+
+
+// prikaz/skrivanje pomoči:
+function togglePrikazPodatkov(){
+  document.getElementById("pomoc").classList.toggle("skrito");
+}

@@ -7,3 +7,9 @@ canvas {
   display: inline;
   border: 1px solid black;
 }
+.skrito {
+  display: none;
+}
+.tPomoci {
+  border: 1px solid black;
+}
