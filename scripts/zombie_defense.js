@@ -381,11 +381,11 @@ function loadWorld() {
   worldVertexTextureCoordBuffer.numItems = 6;
 
   // zidovi
-  var xm = -1.75; // X minimum
-  var xb = -1;    // X maximum
-  var zm = -1.6;  // Z minimum
-  var zb = 0.4;   // Z maximum
-  var v = 2;      // visina
+  var xm = 0; // X minimum
+  var xb = 0.05;    // X maximum
+  var zm = 0;  // Z minimum
+  var zb = 0.5;   // Z maximum
+  var v = 0.2;      // visina
   var wallVertexes = [
     // front
     /*
@@ -474,7 +474,7 @@ function loadWorld() {
   wallVertexTextureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexTextureCoordBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(wallTextures), gl.STATIC_DRAW);
-  wallVertexPositionBuffer.itemSize = 2;
+  wallVertexTextureCoordBuffer.itemSize = 2;
   wallVertexTextureCoordBuffer.numItems = 24;
 
   wallVertexIndexBuffer = gl.createBuffer();
@@ -626,7 +626,7 @@ function initZombies(){
 function loadZombie(){
     mvPushMatrix();
   
-    var scP = 0.15;  //velikost kocke
+    var scP = 0.07;  //velikost kocke
     var vertexPositions = [
        // Front face
        -scP, 0,  scP,
@@ -866,23 +866,101 @@ function drawScene() {
   setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, playerVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
-  // zidovi
-  mat4.identity(mvMatrix);
-  mat4.translate(mvMatrix, [0, 0, 0]);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
-  gl.uniform1i(shaderProgram.samplerUniform, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexTextureCoordBuffer);
-  gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, wallVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexPositionBuffer);
-  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, wallVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wallVertexIndexBuffer);
-  setMatrixUniforms();
-  gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  // ZIDOVI
   
+    // zidovi
+    mat4.identity(mvMatrix);
+    mat4.translate(mvMatrix, [1.1, 0, -7.86]);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
+  
+    gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexTextureCoordBuffer);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, wallVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  
+    gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, wallVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wallVertexIndexBuffer);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.8]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.rotateY(mvMatrix, degToRad(-90));
+    mat4.translate(mvMatrix, [0.45, 0, 0]);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.8]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.rotateY(mvMatrix, degToRad(-90));
+    mat4.translate(mvMatrix, [0.45, 0, 0]);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.8]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.rotateY(mvMatrix, degToRad(-90));
+    mat4.translate(mvMatrix, [0.45, 0, 0]);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.8]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+    mat4.translate(mvMatrix, [0, 0, 0.5]);
+    
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  
+
 
   // izris zombijev
 
