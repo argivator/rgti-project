@@ -37,6 +37,7 @@ var walls = [];
 // zombie configurations
 var zombiesNr = 5;
 var zombies = [];
+var lastZombiePositions = [];
 var zombieMS = 0;
 var zombieXsmer = 1;
 var zombieYsmer = 1;
@@ -72,7 +73,7 @@ var playerCameraRotationY = 40;
 var moveUpEnabler = 1;
 var moveDownEnabler = 1;
 
-var lastPosition = {playerMovementLR: 0, playerMovementUpDown: 0, playerRotation: 0, playerCameraPositionX: 0, playerCameraPositionY: -4.5, playerCameraPositionY: 2.7, playerCameraRotationY: 40};
+var lastPlayerPosition = {playerMovementLR: 0, playerMovementUpDown: 0, playerRotation: 0, playerCameraPositionX: 0, playerCameraPositionY: -4.5, playerCameraPositionY: 2.7, playerCameraRotationY: 40};
 //premik "igralca" levo/desno
 var playerMovementLR = 0;
 //premik "igralca" gor/dol
@@ -674,6 +675,8 @@ function loadPlayer() {
 function initZombies(){
 
   for(var i = 0; i < zombiesNr; i++){
+    var tmp = {lastX: 0, lastY: 0, lastRot: 0};
+    lastZombiePositions.push(tmp);
     var st = Math.floor((Math.random() * 8) + 1);
     initZombie(st);
     }
@@ -1241,35 +1244,35 @@ function drawScene() {
     //collisionDetection
     var wallRect1 = {x: 1.1, y: -0.9, width: 0.12, height: 1.1};
     if (collision(playerRect, wallRect1)) {
-        undoLastStep()
+        undoLastPlayerStep()
     }
     var wallRect2 = {x: 1.1, y: 0.5, width: 0.12, height: 1};
     if (collision(playerRect, wallRect2)) {
-        undoLastStep()
+        undoLastPlayerStep()
     }
     var wallRect3 = {x: 0.11, y: 1.4, width: 1, height: 0.12};
     if (collision(playerRect, wallRect3)) {
-      undoLastStep();
+      undoLastPlayerStep();
     }
     var wallRect4 = {x: -1.15 , y: 1.4, width: 1, height: 0.12};
     if (collision(playerRect, wallRect4)) {
-      undoLastStep();
+      undoLastPlayerStep();
     }
     var wallRect5 = {x: -1.2, y: 0.5, width: 0.12, height: 1};
     if (collision(playerRect, wallRect5)) {
-      undoLastStep();
+      undoLastPlayerStep();
     }
     var wallRect6 = {x: -1.2, y: -0.9, width: 0.12, height: 1.05};
     if (collision(playerRect, wallRect6)) {
-      undoLastStep();
+      undoLastPlayerStep();
     }
     var wallRect7 = {x: -1.2, y: -0.9, width: 1.095, height: 0.12};
     if (collision(playerRect, wallRect7)) {
-      undoLastStep();
+      undoLastPlayerStep();
     }
     var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
     if (collision(playerRect, wallRect8)) {
-      undoLastStep();
+      undoLastPlayerStep();
     }
 
 
@@ -1419,6 +1422,19 @@ function drawScene() {
       zombies[i].draw(rot);
       //zombies[i].draw(zombies[i]);
    // }
+
+      zombieRect = {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07};
+      if (collision(zombieRect, wallRect1) ||
+          collision(zombieRect, wallRect2) ||
+          collision(zombieRect, wallRect3) ||
+          collision(zombieRect, wallRect4) ||
+          collision(zombieRect, wallRect5) ||
+          collision(zombieRect, wallRect6) ||
+          collision(zombieRect, wallRect7) ||
+          collision(zombieRect, wallRect8)) {
+          undoLastZombieStep(i);
+        }
+
  }
 }
 
@@ -1669,29 +1685,45 @@ function start() {
         drawScene();
         drawBullets();
         updateLastPosition();
+        upradteLastPlayerPosition();
+        updateLastZombiesPositions();
       }
     }, 15);
   }
 }
 
-function updateLastPosition() {
-    lastPosition.playerMovementLR = playerMovementLR;
-    lastPosition.playerMovementUpDown = playerMovementUpDown;
-    lastPosition.playerRotation = playerRotation;
-    lastPosition.playerCameraPositionX = playerCameraPositionX;
-    lastPosition.playerCameraPositionY = playerCameraPositionY;
-    lastPosition.playerCameraPositionZ = playerCameraPositionZ;
-    lastPosition.playerCameraRotationY = playerCameraRotationY;
+function upradteLastPlayerPosition() {
+    lastPlayerPosition.playerMovementLR = playerMovementLR;
+    lastPlayerPosition.playerMovementUpDown = playerMovementUpDown;
+    lastPlayerPosition.playerRotation = playerRotation;
+    lastPlayerPosition.playerCameraPositionX = playerCameraPositionX;
+    lastPlayerPosition.playerCameraPositionY = playerCameraPositionY;
+    lastPlayerPosition.playerCameraPositionZ = playerCameraPositionZ;
+    lastPlayerPosition.playerCameraRotationY = playerCameraRotationY;
 }
 
-function undoLastStep() {
-  playerMovementLR = lastPosition.playerMovementLR
-  playerMovementUpDown = lastPosition.playerMovementUpDown;
-  playerRotation = lastPosition.playerRotation;
-  playerCameraPositionX = lastPosition.playerCameraPositionX;
-  playerCameraPositionY = lastPosition.playerCameraPositionY;
-  playerCameraPositionZ = lastPosition.playerCameraPositionZ;
-  playerCameraRotationY = lastPosition.playerCameraRotationY;
+function undoLastPlayerStep() {
+  playerMovementLR = lastPlayerPosition.playerMovementLR
+  playerMovementUpDown = lastPlayerPosition.playerMovementUpDown;
+  playerRotation = lastPlayerPosition.playerRotation;
+  playerCameraPositionX = lastPlayerPosition.playerCameraPositionX;
+  playerCameraPositionY = lastPlayerPosition.playerCameraPositionY;
+  playerCameraPositionZ = lastPlayerPosition.playerCameraPositionZ;
+  playerCameraRotationY = lastPlayerPosition.playerCameraRotationY;
+}
+
+function updateLastZombiesPositions() {
+  for (var n in zombies) {
+    lastZombiePositions[n].lastX = zombies[n].x;
+    lastZombiePositions[n].lastY = zombies[n].y;
+    lastZombiePositions[n].lastRot = zombies[n].rot;
+  }
+}
+
+function undoLastZombieStep(n) {
+  zombies[n].x = lastZombiePositions[n].lastX;
+  zombies[n].y = lastZombiePositions[n].lastY;
+  zombies[n].rot = lastZombiePositions[n].lastRot;
 }
 
 // prikaz/skrivanje pomoči:
