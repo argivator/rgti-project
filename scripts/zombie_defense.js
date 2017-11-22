@@ -68,7 +68,11 @@ var playerCameraPositionY = -4.5;
 var playerCameraPositionZ = 2.7;
 var playerCameraRotationY = 40;
 
+// stikali za omogocanje premikanja kamere gor dol
+var moveUpEnabler = 1;
+var moveDownEnabler = 1;
 
+var lastPosition = {playerMovementLR: 0, playerMovementUpDown: 0, playerRotation: 0, playerCameraPositionX: 0, playerCameraPositionY: -4.5, playerCameraPositionY: 2.7, playerCameraRotationY: 40};
 //premik "igralca" levo/desno
 var playerMovementLR = 0;
 //premik "igralca" gor/dol
@@ -117,7 +121,7 @@ function Zombie(X, Y, smerX, smerY, ms, rot){
 }
 Zombie.prototype.draw = function(rot){
   mvPushMatrix();
-  
+
       //var x = zombies[i].x;
       //var y = zombies[i].y;
       var x = this.x;
@@ -133,25 +137,25 @@ Zombie.prototype.draw = function(rot){
 
 
 
-      
+
       mat4.translate(mvMatrix, [x, 0, y]);
       mat4.rotateY(mvMatrix, rot);
-      
+
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, zombieTexture);
       gl.uniform1i(shaderProgram.samplerUniform, 0);
-    
+
       gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexTextureCoordBuffer);
       gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, zombieVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    
+
       gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexPositionBuffer);
       gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, zombieVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    
+
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, zombieVertexIndexBuffer);
       setMatrixUniforms();
       gl.drawElements(gl.TRIANGLES, zombieVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
       //console.log("pushed real good");
-  
+
       mvPopMatrix();
 }
 // objekt bullets
@@ -346,7 +350,7 @@ function initTextures() {
   playerTexture.image.src = "./assets/lego.png";
 
   // za zombije
-  
+
   zombieTexture = gl.createTexture();
   zombieTexture.image = new Image();
   zombieTexture.image.onload = function() {
@@ -668,7 +672,7 @@ function loadPlayer() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function initZombies(){
-  
+
   for(var i = 0; i < zombiesNr; i++){
     var st = Math.floor((Math.random() * 8) + 1);
     initZombie(st);
@@ -676,7 +680,7 @@ function initZombies(){
 }
 function loadZombie(){
     mvPushMatrix();
-  
+
     var scP = 0.07;  //velikost kocke
     var vertexPositions = [
        // Front face
@@ -684,45 +688,45 @@ function loadZombie(){
        scP, 0,  scP,
        scP,  scP,  scP,
        -scP,  scP,  scP,
-  
+
        // Back face
        -scP, 0, -scP,
        -scP,  scP, -scP,
        scP,  scP, -scP,
        scP, 0, -scP,
-  
+
        // Top face
        -scP,  scP, -scP,
        -scP,  scP,  scP,
        scP,  scP,  scP,
        scP,  scP, -scP,
-  
+
        // Bottom face
        -scP, 0, -scP,
        scP, 0, -scP,
        scP, 0,  scP,
        -scP, 0,  scP,
-  
+
        // Right face
        scP, 0, -scP,
        scP,  scP, -scP,
        scP,  scP,  scP,
        scP, 0,  scP,
-  
+
        // Left face
        -scP, 0, -scP,
        -scP, 0,  scP,
        -scP,  scP,  scP,
        -scP,  scP, -scP
     ];
-  
+
     // ustcarjanje bufferja za zombie
     zombieVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositions), gl.STATIC_DRAW);
     zombieVertexPositionBuffer.itemSize = 3;
     zombieVertexPositionBuffer.numItems = 24;
-  
+
     // koordinate texture kocke (lego face)
     var textureCoords = [
       // Front face
@@ -730,47 +734,47 @@ function loadZombie(){
       1.0, 0.0,
       1.0, 1.0,
       0.0, 1.0,
-  
+
       // Back face
       1.0, 0.0,
       1.0, 1.0,
       0.0, 1.0,
       0.0, 0.0,
-  
+
       // Top face
       0.0, 1.0,
       0.0, 0.0,
       1.0, 0.0,
       1.0, 1.0,
-  
-  
-  
+
+
+
       // Bottom face
       1.0, 1.0,
       0.0, 1.0,
       0.0, 0.0,
       1.0, 0.0,
-  
+
       // Right face
       1.0, 0.0,
       1.0, 1.0,
       0.0, 1.0,
       0.0, 0.0,
-  
+
       // Left face
       0.0, 0.0,
       1.0, 0.0,
       1.0, 1.0,
       0.0, 1.0
     ];
-  
+
     // ustvarjanje bufferja za lego face
     zombieVertexTextureCoordBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, zombieVertexTextureCoordBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
     zombieVertexTextureCoordBuffer.itemSize = 2;
     zombieVertexTextureCoordBuffer.numItems = 24;
-  
+
     // buffer ki naredi trikotnike iz koordinat kocke
     zombieVertexIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, zombieVertexIndexBuffer);
@@ -785,7 +789,7 @@ function loadZombie(){
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(zombieVertexIndices), gl.STATIC_DRAW);
     zombieVertexIndexBuffer.itemSize = 1;
     zombieVertexIndexBuffer.numItems = 36;
-  
+
     mvPopMatrix();
 }
 function initZombie(idx){
@@ -822,7 +826,7 @@ function initZombie(idx){
     default:
       break;
   }
-  
+
 
 
 }
@@ -1089,16 +1093,30 @@ function drawScene() {
   gl.drawArrays(gl.TRIANGLES, 0, worldVertexPositionBuffer.numItems);
 
   // preventiva da gre igralec iz trave
-  if(playerMovementLR > 3.35) playerMovementLR = 3.35;
-  if(playerMovementLR < -3.35) playerMovementLR = -3.35;
+  if(playerMovementLR > 3.35) {
+    playerMovementLR = 3.35;
+    playerCameraPositionX = -playerMovementLR;
+  }
+  if(playerMovementLR < -3.35) {
+    playerMovementLR = -3.35;
+    playerCameraPositionX = -playerMovementLR;
+  }
 
-  if(playerMovementUpDown > 4) playerMovementUpDown = 4;
-  if(playerMovementUpDown < -3) playerMovementUpDown = -3;
+  if(playerMovementUpDown > 4) {
+    playerMovementUpDown = 4;
+    moveDownEnabler = 0;
+  }
+  if(playerMovementUpDown < -3) {
+    playerMovementUpDown = -3;
+    moveUpEnabler = 0;
+  }
+
 
   // izris igralca (zaenkrat kocke)
   mat4.translate(mvMatrix, [playerMovementLR, 0.0, playerMovementUpDown]);
   mat4.rotateY(mvMatrix, degToRad(playerRotation)); // rotacija
-  
+
+  var playerRect = {x: playerMovementLR, y: playerMovementUpDown, width: 0.07, height: 0.07};
 
 
   // izpisemo v console X in Y pozicijo igralca vsakih 500 klicov metode drawScene ( ZA POMOČ )
@@ -1128,20 +1146,20 @@ function drawScene() {
 
 
   // ZIDOVI
-  
+
     // zidovi
     mat4.identity(mvMatrix);
     mat4.translate(mvMatrix, [1.1, 0, -7.86]);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, wallTexture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
-  
+
     gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexTextureCoordBuffer);
     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, wallVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-  
+
     gl.bindBuffer(gl.ARRAY_BUFFER, wallVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, wallVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-  
+
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, wallVertexIndexBuffer);
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
@@ -1153,12 +1171,12 @@ function drawScene() {
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.8]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.5]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -1172,12 +1190,12 @@ function drawScene() {
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.8]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.5]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -1191,12 +1209,12 @@ function drawScene() {
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.8]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.5]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -1210,15 +1228,49 @@ function drawScene() {
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.8]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mat4.translate(mvMatrix, [0, 0, 0.5]);
-    
+
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-  
+
+
+    //collisionDetection
+    var wallRect1 = {x: 1.1, y: -0.9, width: 0.12, height: 1.1};
+    if (collision(playerRect, wallRect1)) {
+        undoLastStep()
+    }
+    var wallRect2 = {x: 1.1, y: 0.5, width: 0.12, height: 1};
+    if (collision(playerRect, wallRect2)) {
+        undoLastStep()
+    }
+    var wallRect3 = {x: 0.11, y: 1.4, width: 1, height: 0.12};
+    if (collision(playerRect, wallRect3)) {
+      undoLastStep();
+    }
+    var wallRect4 = {x: -1.15 , y: 1.4, width: 1, height: 0.12};
+    if (collision(playerRect, wallRect4)) {
+      undoLastStep();
+    }
+    var wallRect5 = {x: -1.2, y: 0.5, width: 0.12, height: 1};
+    if (collision(playerRect, wallRect5)) {
+      undoLastStep();
+    }
+    var wallRect6 = {x: -1.2, y: -0.9, width: 0.12, height: 1.05};
+    if (collision(playerRect, wallRect6)) {
+      undoLastStep();
+    }
+    var wallRect7 = {x: -1.2, y: -0.9, width: 1.095, height: 0.12};
+    if (collision(playerRect, wallRect7)) {
+      undoLastStep();
+    }
+    var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
+    if (collision(playerRect, wallRect8)) {
+      undoLastStep();
+    }
 
 
   // izris zombijev
@@ -1231,7 +1283,7 @@ function drawScene() {
 
   for(var i in zombies){
     //zombies[i].draw();
-    
+
 
 
     // PREMIKANJE ZOMBIJEV (sory za grdo kodo rip :(
@@ -1245,45 +1297,45 @@ function drawScene() {
         // se spremeni smer kam skacejo
         //console.log(zombies[i].x +  " and " + playerMovementLR);
         if(zombies[i].x < playerMovementLR){
-  
-  
+
+
           zombies[i].smerX = 1;
         }else{
-  
+
           zombies[i].smerX = -1;
-  
+
         }
         if(zombies[i].y < playerMovementUpDown){
           zombies[i].smerY = 1;
-  
+
         }else{
           zombies[i].smerY = -1;
-  
+
         }
         //console.log("skok");
         zombies[i].ms = 0.00001;
-        
+
       }
     }else{
       if(zombies[i].x < playerMovementLR){
-        
-        
+
+
                 zombies[i].smerX = 1;
               }else{
-        
+
                 zombies[i].smerX = -1;
-        
+
               }
               if(zombies[i].y < playerMovementUpDown){
                 zombies[i].smerY = 1;
-        
+
               }else{
                 zombies[i].smerY = -1;
-        
+
               }
       zombies[i].ms = maxHitrostZombijev;
     }
-    
+
 
       var deltaX;
       var deltaY;
@@ -1338,9 +1390,7 @@ function drawScene() {
         rot = -rot;
         rot = rot - degToRad(90);
 
-       /* if(counterShowConsole == 100 || counterShowConsole == 400){
-          console.log(rot);
-        } */
+
       }
       if(zombies[i].smerX == 1 && zombies[i].smerY == 1){
         rot = Math.atan(deltaY / deltaX);
@@ -1356,20 +1406,36 @@ function drawScene() {
       if(zombies[i].smerX == 1 && zombies[i].smerY == -1){
         rot = Math.atan(deltaY / deltaX);
       }
-      
 
-      
+
+
 
       if(skacejo){
         zombies[i].ms += 0.002; // TO SPREMENI ZA 'SKAKANJE'
       }
-      
+
       //console.log(zombieMS);
 
       zombies[i].draw(rot);
       //zombies[i].draw(zombies[i]);
    // }
-  }
+ }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        COLLISION DETECTION
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    Axis-Aligned Bounding Box
+function collision(rect1, rect2) {
+    if (rect1.x < rect2.x + rect2.width &&
+       rect1.x + rect1.width > rect2.x &&
+       rect1.y < rect2.y + rect2.height &&
+       rect1.height + rect1.y > rect2.y) {
+        return true;
+    }
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1450,20 +1516,23 @@ function handleKeys() {
     playerMovementLR += playerSpeed/2;
     playerCameraPositionX -= playerSpeed/2;
     playerMovementUpDown += playerSpeed/2;
-    playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(cameraRotationY));
-    playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(cameraRotationY));
+    playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
+    playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
+    moveUpEnabler = 1;
   } else if (currentlyPressedKeys[68] && currentlyPressedKeys[87]) {
     // D & W
     playerMovementLR += playerSpeed/2;
     playerCameraPositionX -= playerSpeed/2;
     playerMovementUpDown -= playerSpeed/2;
-    playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(cameraRotationY));
-    playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(cameraRotationY));
+    playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
+    playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
+    moveDownEnabler = 1;
   } else if (currentlyPressedKeys[87] && currentlyPressedKeys[65]) {
     // W & A
     playerMovementUpDown -= playerSpeed/2;
-    playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(cameraRotationY));
-    playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(cameraRotationY));
+    playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
+    playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
+    moveDownEnabler = 1;
     playerMovementLR -= playerSpeed/2;
     playerCameraPositionX += playerSpeed/2;
   } else if (currentlyPressedKeys[65] && currentlyPressedKeys[83]) {
@@ -1471,14 +1540,16 @@ function handleKeys() {
     playerMovementLR -= playerSpeed/2;
     playerCameraPositionX += playerSpeed/2;
     playerMovementUpDown += playerSpeed/2;
-    playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(cameraRotationY));
-    playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(cameraRotationY));
+    playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
+    playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
+    moveUpEnabler = 1;
   } else {
     if (currentlyPressedKeys[87]) {
       // W only
       playerMovementUpDown -= playerSpeed;
-      playerCameraPositionY -= playerSpeed * Math.sin(degToRad(cameraRotationY));
-      playerCameraPositionZ += playerSpeed * Math.cos(degToRad(cameraRotationY));
+      playerCameraPositionY -= playerSpeed * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
+      playerCameraPositionZ += playerSpeed * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
+      moveDownEnabler = 1;
     }
     if (currentlyPressedKeys[65]) {
       // A only
@@ -1493,10 +1564,11 @@ function handleKeys() {
     if (currentlyPressedKeys[83]) {
       // S only
       playerMovementUpDown += playerSpeed;
-      playerCameraPositionY += playerSpeed * Math.sin(degToRad(cameraRotationY));
-      playerCameraPositionZ -= playerSpeed * Math.cos(degToRad(cameraRotationY));
+      playerCameraPositionY += playerSpeed * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
+      playerCameraPositionZ -= playerSpeed * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
+      moveUpEnabler = 1;
     }
-    
+
   }
   if(currentlyPressedKeys[37]){ // left
     playerRotation += 2;
@@ -1596,12 +1668,31 @@ function start() {
         cameraMovement();
         drawScene();
         drawBullets();
+        updateLastPosition();
       }
     }, 15);
   }
 }
 
+function updateLastPosition() {
+    lastPosition.playerMovementLR = playerMovementLR;
+    lastPosition.playerMovementUpDown = playerMovementUpDown;
+    lastPosition.playerRotation = playerRotation;
+    lastPosition.playerCameraPositionX = playerCameraPositionX;
+    lastPosition.playerCameraPositionY = playerCameraPositionY;
+    lastPosition.playerCameraPositionZ = playerCameraPositionZ;
+    lastPosition.playerCameraRotationY = playerCameraRotationY;
+}
 
+function undoLastStep() {
+  playerMovementLR = lastPosition.playerMovementLR
+  playerMovementUpDown = lastPosition.playerMovementUpDown;
+  playerRotation = lastPosition.playerRotation;
+  playerCameraPositionX = lastPosition.playerCameraPositionX;
+  playerCameraPositionY = lastPosition.playerCameraPositionY;
+  playerCameraPositionZ = lastPosition.playerCameraPositionZ;
+  playerCameraRotationY = lastPosition.playerCameraRotationY;
+}
 
 // prikaz/skrivanje pomoči:
 function togglePrikazPodatkov(){
