@@ -64,7 +64,7 @@ var playerCameraRotationY = 40;
 var moveUpEnabler = 1;
 var moveDownEnabler = 1;
 
-
+var lastPosition = {playerMovementLR: 0, playerMovementUpDown: 0, playerRotation: 0, playerCameraPositionX: 0, playerCameraPositionY: -4.5, playerCameraPositionY: 2.7, playerCameraRotationY: 40};
 //premik "igralca" levo/desno
 var playerMovementLR = 0;
 //premik "igralca" gor/dol
@@ -857,6 +857,7 @@ function drawScene() {
   mat4.translate(mvMatrix, [playerMovementLR, 0.0, playerMovementUpDown]);
   mat4.rotateY(mvMatrix, degToRad(playerRotation)); // rotacija
 
+  var playerRect = {x: playerMovementLR, y: playerMovementUpDown, width: 0.07, height: 0.07};
 
 
   // izpisemo v console X in Y pozicijo igralca vsakih 500 klicov metode drawScene ( ZA POMOČ )
@@ -978,6 +979,40 @@ function drawScene() {
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 
+    //collisionDetection
+    var wallRect1 = {x: 1.1, y: -0.9, width: 0.12, height: 1.1};
+    if (collision(playerRect, wallRect1)) {
+        undoLastStep()
+    }
+    var wallRect2 = {x: 1.1, y: 0.5, width: 0.12, height: 1};
+    if (collision(playerRect, wallRect2)) {
+        undoLastStep()
+    }
+    var wallRect3 = {x: 0.11, y: 1.4, width: 1, height: 0.12};
+    if (collision(playerRect, wallRect3)) {
+      undoLastStep();
+    }
+    var wallRect4 = {x: -1.15 , y: 1.4, width: 1, height: 0.12};
+    if (collision(playerRect, wallRect4)) {
+      undoLastStep();
+    }
+    var wallRect5 = {x: -1.2, y: 0.5, width: 0.12, height: 1};
+    if (collision(playerRect, wallRect5)) {
+      undoLastStep();
+    }
+    var wallRect6 = {x: -1.2, y: -0.9, width: 0.12, height: 1.05};
+    if (collision(playerRect, wallRect6)) {
+      undoLastStep();
+    }
+    var wallRect7 = {x: -1.2, y: -0.9, width: 1.095, height: 0.12};
+    if (collision(playerRect, wallRect7)) {
+      undoLastStep();
+    }
+    var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
+    if (collision(playerRect, wallRect8)) {
+      undoLastStep();
+    }
+
 
   // izris zombijev
 
@@ -1096,9 +1131,7 @@ function drawScene() {
         rot = -rot;
         rot = rot - degToRad(90);
 
-       /* if(counterShowConsole == 100 || counterShowConsole == 400){
-          console.log(rot);
-        } */
+
       }
       if(zombies[i].smerX == 1 && zombies[i].smerY == 1){
         rot = Math.atan(deltaY / deltaX);
@@ -1127,7 +1160,23 @@ function drawScene() {
       zombies[i].draw(rot);
       //zombies[i].draw(zombies[i]);
    // }
-  }
+ }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        COLLISION DETECTION
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    Axis-Aligned Bounding Box
+function collision(rect1, rect2) {
+    if (rect1.x < rect2.x + rect2.width &&
+       rect1.x + rect1.width > rect2.x &&
+       rect1.y < rect2.y + rect2.height &&
+       rect1.height + rect1.y > rect2.y) {
+        return true;
+    }
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1349,12 +1398,31 @@ function start() {
         handleKeys();
         cameraMovement();
         drawScene();
+        updateLastPosition();
       }
     }, 15);
   }
 }
 
+function updateLastPosition() {
+    lastPosition.playerMovementLR = playerMovementLR;
+    lastPosition.playerMovementUpDown = playerMovementUpDown;
+    lastPosition.playerRotation = playerRotation;
+    lastPosition.playerCameraPositionX = playerCameraPositionX;
+    lastPosition.playerCameraPositionY = playerCameraPositionY;
+    lastPosition.playerCameraPositionZ = playerCameraPositionZ;
+    lastPosition.playerCameraRotationY = playerCameraRotationY;
+}
 
+function undoLastStep() {
+  playerMovementLR = lastPosition.playerMovementLR
+  playerMovementUpDown = lastPosition.playerMovementUpDown;
+  playerRotation = lastPosition.playerRotation;
+  playerCameraPositionX = lastPosition.playerCameraPositionX;
+  playerCameraPositionY = lastPosition.playerCameraPositionY;
+  playerCameraPositionZ = lastPosition.playerCameraPositionZ;
+  playerCameraRotationY = lastPosition.playerCameraRotationY;
+}
 
 // prikaz/skrivanje pomoči:
 function togglePrikazPodatkov(){
