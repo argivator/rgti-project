@@ -22,6 +22,14 @@ var wallVertexPositionBuffer = null;
 var wallVertexTextureCoordBuffer = null;
 var wallVertexIndexBuffer = null;
 
+var bulletVertexPositionBuffer = null;
+var bulletVertexTextureCoordBuffer = null;
+var bulletVertexIndexBuffer = null;
+// bullets
+var bullets = [];
+var stevecMetkov = 0; // za identifikacijo dolocenega metka
+var lahkoStrelja = true;
+
 // wall config
 
 var walls = [];
@@ -85,6 +93,7 @@ var texturesLoaded = 0;
 var grassTexture;
 var playerTexture;
 var wallTexture;
+var bulletTexture;
 
 var playerSpeed = 0.02;
 // generiranje random stevil znotraj mej prvi in drugi (tudi randomly negativno)
@@ -145,6 +154,37 @@ Zombie.prototype.draw = function(rot){
   
       mvPopMatrix();
 }
+// objekt bullets
+function Bullet(x, y, rot){
+  this.x = x;
+  this.y = y;
+  this.rot = rot;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function mvPushMatrix() {
   var copy = mat4.create();
   mat4.set(mvMatrix, copy);
@@ -160,6 +200,9 @@ function mvPopMatrix() {
 
 function degToRad(degrees) {
   return degrees * Math.PI / 180;
+}
+function radToDeg(rad){
+  return rad*180 / Math.PI;
 }
 //
 // initGL
@@ -319,6 +362,14 @@ function initTextures() {
     handleTextureLoaded(wallTexture);
   }
   wallTexture.image.src = "./assets/wall.png";
+
+  // bulleti
+  bulletTexture = gl.createTexture();
+  bulletTexture.image = new Image();
+  bulletTexture.image.onload = function(){
+    handleTextureLoaded(bulletTexture);
+  }
+  bulletTexture.image.src = "./assets/bullet.png";
 
 }
 
@@ -775,6 +826,214 @@ function initZombie(idx){
 
 
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                        BULLETS
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function addBullet(){
+  bullets.push(new Bullet(playerMovementLR, playerMovementUpDown, playerRotation));
+  //console.log(playerMovementLR, playerMovementUpDown, playerRotation);
+}
+function drawBullets(){
+  for(var i in bullets){
+    if(bullets[i]){
+      if(bullets[i].x > 10 || bullets[i].y > 10) bullets[i] = null; // nastavi, ce gre bullet iz mape.
+      else{
+        var x = bullets[i].x;
+        var y = bullets[i].y;
+        var rot = bullets[i].rot;
+
+        rot = rot%360;
+        if(rot < 0) rot = rot + 360;
+        rot = degToRad(rot);
+
+
+        var hipotenuza = 0.15;  // kako hitro hocemo, da se premika metek
+        var deltaX;
+        var deltaY;
+        if(rot < 90){                   // desno gor
+
+          deltaX = hipotenuza * Math.cos(rot);
+          deltaY = hipotenuza * Math.sin(rot);
+          deltaY = -deltaY;
+
+        }else if(rot == 90){
+
+          deltaX = 0;
+          deltaY = -hipotenuza;
+
+        }else if(rot > 90 && rot < 180){ // levo gor
+
+          deltaX = hipotenuza * Math.cos(rot);
+          deltaY = hipotenuza * Math.sin(rot);
+          deltaY = -deltaY;
+
+        }else if(rot == 180){
+          deltaX = -hipotenuza;
+          deltaY = 0;
+        }else if(rot > 180 && rot < 270){  // levo dol
+          deltaX = hipotenuza * Math.cos(rot);
+          deltaY = hipotenuza * Math.sin(rot);
+          deltaY = -deltaY;
+        }else if(rot == 270){
+          deltaX = 0;
+          deltaY = hipotenuza;
+        }else if(rot > 270 && rot < 360){
+          deltaX = hipotenuza * Math.cos(rot);
+          deltaY = hipotenuza * Math.sin(rot);
+          deltaY = -deltaY;
+        }
+
+  
+        mvPushMatrix();
+  
+        mat4.identity(mvMatrix);
+        mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
+  
+        mat4.translate(mvMatrix, [x, 0, y]);
+        mat4.rotateY(mvMatrix, rot);
+        
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, bulletTexture);
+        gl.uniform1i(shaderProgram.samplerUniform, 0);
+      
+        gl.bindBuffer(gl.ARRAY_BUFFER, bulletVertexTextureCoordBuffer);
+        gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, bulletVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+      
+        gl.bindBuffer(gl.ARRAY_BUFFER, bulletVertexPositionBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, bulletVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+      
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bulletVertexIndexBuffer);
+        setMatrixUniforms();
+        gl.drawElements(gl.TRIANGLES, bulletVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        //console.log("pushed real good");
+    
+        mvPopMatrix();
+  
+        bullets[i].x += deltaX;
+        bullets[i].y += deltaY;
+  
+      }
+      
+    }
+  }
+}
+
+function loadBullet(){
+  var scP = 0.03;  //velikost kocke
+  var vertexPositions = [
+     // Front face
+     -scP, 0,  scP,
+     scP, 0,  scP,
+     scP,  scP,  scP,
+     -scP,  scP,  scP,
+
+     // Back face
+     -scP, 0, -scP,
+     -scP,  scP, -scP,
+     scP,  scP, -scP,
+     scP, 0, -scP,
+
+     // Top face
+     -scP,  scP, -scP,
+     -scP,  scP,  scP,
+     scP,  scP,  scP,
+     scP,  scP, -scP,
+
+     // Bottom face
+     -scP, 0, -scP,
+     scP, 0, -scP,
+     scP, 0,  scP,
+     -scP, 0,  scP,
+
+     // Right face
+     scP, 0, -scP,
+     scP,  scP, -scP,
+     scP,  scP,  scP,
+     scP, 0,  scP,
+
+     // Left face
+     -scP, 0, -scP,
+     -scP, 0,  scP,
+     -scP,  scP,  scP,
+     -scP,  scP, -scP
+  ];
+
+  // ustcarjanje bufferja za igralca
+  bulletVertexPositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bulletVertexPositionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositions), gl.STATIC_DRAW);
+  bulletVertexPositionBuffer.itemSize = 3;
+  bulletVertexPositionBuffer.numItems = 24;
+
+  // koordinate texture kocke (lego face)
+  var textureCoords = [
+    // Front face
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+
+    // Back face
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+
+    // Top face
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+
+
+
+    // Bottom face
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+
+    // Right face
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+
+    // Left face
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0
+  ];
+
+  // ustvarjanje bufferja za lego face
+
+  bulletVertexTextureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bulletVertexTextureCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+  bulletVertexTextureCoordBuffer.itemSize = 2;
+  bulletVertexTextureCoordBuffer.numItems = 24;
+
+  // buffer ki naredi trikotnike iz koordinat kocke
+  bulletVertexIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bulletVertexIndexBuffer);
+  var bulletIndices = [
+    0, 1, 2,      0, 2, 3,    // Front face
+    4, 5, 6,      4, 6, 7,    // Back face
+    8, 9, 10,     8, 10, 11,  // Top face
+    12, 13, 14,   12, 14, 15, // Bottom face
+    16, 17, 18,   16, 18, 19, // Right face
+    20, 21, 22,   20, 22, 23  // Left face
+  ];
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(bulletIndices), gl.STATIC_DRAW);
+  bulletVertexIndexBuffer.itemSize = 1;
+  bulletVertexIndexBuffer.numItems = 36;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1240,10 +1499,19 @@ function handleKeys() {
     
   }
   if(currentlyPressedKeys[37]){ // left
-    playerRotation -= 5;
+    playerRotation += 2;
   }
   if(currentlyPressedKeys[39]){ // right
-    playerRotation += 5;
+    playerRotation -= 2;
+  }
+  if(currentlyPressedKeys[32]){
+    if(lahkoStrelja){
+      addBullet();
+      lahkoStrelja = false;
+      setTimeout(function(){
+        lahkoStrelja = true;
+      }, 500);
+    }
   }
 
 
@@ -1316,16 +1584,18 @@ function start() {
     loadWorld();
     loadZombie();
     initZombies();
+    loadBullet();
     // Bind keyboard handling functions to document handlers
     document.onkeydown = handleKeyDown;
     document.onkeyup = handleKeyUp;
 
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
-      if (texturesLoaded == 4) {
+      if (texturesLoaded == 5) {
         handleKeys();
         cameraMovement();
         drawScene();
+        drawBullets();
       }
     }, 15);
   }
