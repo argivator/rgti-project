@@ -37,7 +37,6 @@ var walls = [];
 // zombie configurations
 var zombiesNr = 5;
 var zombies = [];
-var lastZombiePositions = [];
 var zombieMS = 0;
 var zombieXsmer = 1;
 var zombieYsmer = 1;
@@ -64,21 +63,23 @@ var fullViewCameraPositionZ = -2.6;
 var fullViewCameraRotationY = 45;
 
 // koordinate kamere ki sledijo igralcu
-var playerCameraPositionX = 0;
+var playerCameraMoveX = 0;
+var playerCameraMoveY = 0;
+var playerCameraMoveZ = 0;
+var playerCameraRotationY = 40;
+var playerCameraPositonX = 0;
 var playerCameraPositionY = -4.5;
 var playerCameraPositionZ = 2.7;
-var playerCameraRotationY = 40;
 
-// stikali za omogocanje premikanja kamere gor dol
-var moveUpEnabler = 1;
-var moveDownEnabler = 1;
 
-var lastPlayerPosition = {playerMovementLR: 0, playerMovementUpDown: 0, playerRotation: 0, playerCameraPositionX: 0, playerCameraPositionY: -4.5, playerCameraPositionY: 2.7, playerCameraRotationY: 40};
+
 //premik "igralca" levo/desno
 var playerMovementLR = 0;
 //premik "igralca" gor/dol
 var playerMovementUpDown = 0;
 //rotacija igralca
+var playerXposition = 0;
+var playerYposition = 0;
 
 var playerRotation = 0;
 
@@ -675,8 +676,6 @@ function loadPlayer() {
 function initZombies(){
 
   for(var i = 0; i < zombiesNr; i++){
-    var tmp = {lastX: 0, lastY: 0, lastRot: 0};
-    lastZombiePositions.push(tmp);
     var st = Math.floor((Math.random() * 8) + 1);
     initZombie(st);
     }
@@ -1053,6 +1052,74 @@ function loadBullet(){
 // Draw the scene.
 //
 function drawScene() {
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // preventiva da gre igralec iz trave
+  if(playerXposition + playerMovementLR > 3.35) {
+    playerMovementLR = 0;
+    playerCameraMoveX = 0;
+  }
+  if(playerXposition + playerMovementLR < -3.35) {
+    playerMovementLR = 0;
+    playerCameraMoveX = 0;
+  }
+
+  if(playerYposition + playerMovementUpDown > 4) {
+    playerMovementUpDown = 0;
+    playerCameraMoveY = 0;
+    playerCameraMoveZ = 0;
+  }
+  if(playerYposition + playerMovementUpDown < -3) {
+    playerMovementUpDown = 0;
+    playerCameraMoveY = 0;
+    playerCameraMoveZ = 0;
+  }
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //collisionDetection
+    var wallRect1 = {x: 1.1, y: -0.8, width: 0.12, height: 1.0};
+    var wallRect2 = {x: 1.1, y: 0.5, width: 0.12, height: 1};
+    var wallRect3 = {x: 0.11, y: 1.4, width: 1.1, height: 0.12};
+    var wallRect4 = {x: -1.15 , y: 1.4, width: 1, height: 0.12};
+    var wallRect5 = {x: -1.2, y: 0.5, width: 0.12, height: 1};
+    var wallRect6 = {x: -1.2, y: -0.8, width: 0.12, height: 0.95};
+    var wallRect7 = {x: -1.15, y: -0.9, width: 1.095, height: 0.12};
+    var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
+
+    var playerXRect = {x: playerXposition + playerMovementLR, y: playerYposition, width: 0.07, height: 0.07};
+    if (collision(playerXRect, wallRect1) ||
+        collision(playerXRect, wallRect2) ||
+        collision(playerXRect, wallRect3) ||
+        collision(playerXRect, wallRect4) ||
+        collision(playerXRect, wallRect5) ||
+        collision(playerXRect, wallRect6) ||
+        collision(playerXRect, wallRect7) ||
+        collision(playerXRect, wallRect8)) {
+
+    } else {
+      playerXposition += playerMovementLR;
+      playerCameraPositonX += playerCameraMoveX;
+    }
+    var playerYRect = {x: playerXposition, y: playerYposition + playerMovementUpDown, width: 0.07, height: 0.07};
+    if (collision(playerYRect, wallRect1) ||
+        collision(playerYRect, wallRect2) ||
+        collision(playerYRect, wallRect3) ||
+        collision(playerYRect, wallRect4) ||
+        collision(playerYRect, wallRect5) ||
+        collision(playerYRect, wallRect6) ||
+        collision(playerYRect, wallRect7) ||
+        collision(playerYRect, wallRect8)) {
+
+    } else {
+      playerYposition += playerMovementUpDown;
+      playerCameraPositionY += playerCameraMoveY;
+      playerCameraPositionZ += playerCameraMoveZ;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //console.log("draw scene");
   // set the rendering environment to full canvas size
   gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -1095,36 +1162,17 @@ function drawScene() {
   setMatrixUniforms();
   gl.drawArrays(gl.TRIANGLES, 0, worldVertexPositionBuffer.numItems);
 
-  // preventiva da gre igralec iz trave
-  if(playerMovementLR > 3.35) {
-    playerMovementLR = 3.35;
-    playerCameraPositionX = -playerMovementLR;
-  }
-  if(playerMovementLR < -3.35) {
-    playerMovementLR = -3.35;
-    playerCameraPositionX = -playerMovementLR;
-  }
 
-  if(playerMovementUpDown > 4) {
-    playerMovementUpDown = 4;
-    moveDownEnabler = 0;
-  }
-  if(playerMovementUpDown < -3) {
-    playerMovementUpDown = -3;
-    moveUpEnabler = 0;
-  }
 
 
   // izris igralca (zaenkrat kocke)
-  mat4.translate(mvMatrix, [playerMovementLR, 0.0, playerMovementUpDown]);
+  mat4.translate(mvMatrix, [playerXposition, 0.0, playerYposition]);
   mat4.rotateY(mvMatrix, degToRad(playerRotation)); // rotacija
-
-  var playerRect = {x: playerMovementLR, y: playerMovementUpDown, width: 0.07, height: 0.07};
 
 
   // izpisemo v console X in Y pozicijo igralca vsakih 500 klicov metode drawScene ( ZA POMOČ )
   if(counterShowConsole > 500){
-    console.log("Trenutna pozicija: " + playerMovementLR + " " + playerMovementUpDown);
+    console.log("Trenutna pozicija: " + playerXposition + " " + playerYposition);
     counterShowConsole = 0;
   }else{
     counterShowConsole += 1;
@@ -1241,39 +1289,7 @@ function drawScene() {
     gl.drawElements(gl.TRIANGLES, wallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 
-    //collisionDetection
-    var wallRect1 = {x: 1.1, y: -0.9, width: 0.12, height: 1.1};
-    if (collision(playerRect, wallRect1)) {
-        undoLastPlayerStep()
-    }
-    var wallRect2 = {x: 1.1, y: 0.5, width: 0.12, height: 1};
-    if (collision(playerRect, wallRect2)) {
-        undoLastPlayerStep()
-    }
-    var wallRect3 = {x: 0.11, y: 1.4, width: 1, height: 0.12};
-    if (collision(playerRect, wallRect3)) {
-      undoLastPlayerStep();
-    }
-    var wallRect4 = {x: -1.15 , y: 1.4, width: 1, height: 0.12};
-    if (collision(playerRect, wallRect4)) {
-      undoLastPlayerStep();
-    }
-    var wallRect5 = {x: -1.2, y: 0.5, width: 0.12, height: 1};
-    if (collision(playerRect, wallRect5)) {
-      undoLastPlayerStep();
-    }
-    var wallRect6 = {x: -1.2, y: -0.9, width: 0.12, height: 1.05};
-    if (collision(playerRect, wallRect6)) {
-      undoLastPlayerStep();
-    }
-    var wallRect7 = {x: -1.2, y: -0.9, width: 1.095, height: 0.12};
-    if (collision(playerRect, wallRect7)) {
-      undoLastPlayerStep();
-    }
-    var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
-    if (collision(playerRect, wallRect8)) {
-      undoLastPlayerStep();
-    }
+
 
 
   // izris zombijev
@@ -1299,7 +1315,7 @@ function drawScene() {
       if(zombies[i].ms >= maxHitrostZombijev){
         // se spremeni smer kam skacejo
         //console.log(zombies[i].x +  " and " + playerMovementLR);
-        if(zombies[i].x < playerMovementLR){
+        if(zombies[i].x < playerXposition){
 
 
           zombies[i].smerX = 1;
@@ -1308,7 +1324,7 @@ function drawScene() {
           zombies[i].smerX = -1;
 
         }
-        if(zombies[i].y < playerMovementUpDown){
+        if(zombies[i].y < playerYposition){
           zombies[i].smerY = 1;
 
         }else{
@@ -1320,7 +1336,7 @@ function drawScene() {
 
       }
     }else{
-      if(zombies[i].x < playerMovementLR){
+      if(zombies[i].x < playerXposition){
 
 
                 zombies[i].smerX = 1;
@@ -1329,7 +1345,7 @@ function drawScene() {
                 zombies[i].smerX = -1;
 
               }
-              if(zombies[i].y < playerMovementUpDown){
+              if(zombies[i].y < playerYposition){
                 zombies[i].smerY = 1;
 
               }else{
@@ -1343,15 +1359,15 @@ function drawScene() {
       var deltaX;
       var deltaY;
       if(zombies[i].smerX == 1){
-        deltaX = (playerMovementLR - zombies[i].x);
+        deltaX = (playerXposition - zombies[i].x);
       }else{
-        deltaX = (zombies[i].x - playerMovementLR);
+        deltaX = (zombies[i].x - playerXposition);
       }
 
       if(zombies[i].smerY == 1){
-        deltaY = playerMovementUpDown - zombies[i].y;
+        deltaY = playerYposition - zombies[i].y;
       }else{
-        deltaY = zombies[i].y - playerMovementUpDown;
+        deltaY = zombies[i].y - playerYposition;
       }
 
       // console.log(deltaX +  " " + deltaY); // vecji kot je delta vecji more bit ms v tej smeri!
@@ -1360,6 +1376,39 @@ function drawScene() {
 
       var spremembaX = deltaX / vsotaObeh;
       var spremembaY = deltaY / vsotaObeh;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      var zombieRect;
+      var sprX = zombies[i].ms * spremembaX;
+      if (zombies[i].smerX == 1) zombieRect = {x: zombies[i].x + sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      else zombieRect = {x: zombies[i].x - sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      if (collision(zombieRect, wallRect1) ||
+          collision(zombieRect, wallRect2) ||
+          collision(zombieRect, wallRect3) ||
+          collision(zombieRect, wallRect4) ||
+          collision(zombieRect, wallRect5) ||
+          collision(zombieRect, wallRect6) ||
+          collision(zombieRect, wallRect7) ||
+          collision(zombieRect, wallRect8)) {
+          spremembaX = 0;
+      }
+
+      var sprY = zombies[i].ms * spremembaY;
+      if (zombies[i].smerY == 1) zombieRect = {x: zombies[i].x, y: zombies[i].y + sprY, width: 0.07, height: 0.07};
+      else zombieRect = {x: zombies[i].x, y: zombies[i].y - sprY, width: 0.07, height: 0.07};
+      if (collision(zombieRect, wallRect1) ||
+          collision(zombieRect, wallRect2) ||
+          collision(zombieRect, wallRect3) ||
+          collision(zombieRect, wallRect4) ||
+          collision(zombieRect, wallRect5) ||
+          collision(zombieRect, wallRect6) ||
+          collision(zombieRect, wallRect7) ||
+          collision(zombieRect, wallRect8)) {
+          spremembaY = 0;
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       var test = spremembaX + spremembaY;
       //console.log("Vsota: " + vsotaObeh + ", X + Y: " + test);
@@ -1423,17 +1472,7 @@ function drawScene() {
       //zombies[i].draw(zombies[i]);
    // }
 
-      zombieRect = {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07};
-      if (collision(zombieRect, wallRect1) ||
-          collision(zombieRect, wallRect2) ||
-          collision(zombieRect, wallRect3) ||
-          collision(zombieRect, wallRect4) ||
-          collision(zombieRect, wallRect5) ||
-          collision(zombieRect, wallRect6) ||
-          collision(zombieRect, wallRect7) ||
-          collision(zombieRect, wallRect8)) {
-          undoLastZombieStep(i);
-        }
+
 
  }
 }
@@ -1454,6 +1493,12 @@ function collision(rect1, rect2) {
     return false;
 }
 
+function movingLeft(rect1, rect2) {
+  return rect1.x < rect2.x;
+}
+function movingDown(rect1, rect2) {
+  return rect1.y < rect2.y;
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                        KEYS
@@ -1529,60 +1574,67 @@ function handleKeys() {
 
   if (currentlyPressedKeys[68] && currentlyPressedKeys[83]) {
     //D & S
-    playerMovementLR += playerSpeed/2;
-    playerCameraPositionX -= playerSpeed/2;
-    playerMovementUpDown += playerSpeed/2;
-    playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
-    playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
-    moveUpEnabler = 1;
+    playerMovementLR = playerSpeed/2;
+    playerCameraMoveX = -playerSpeed/2;
+    playerMovementUpDown = playerSpeed/2;
+    playerCameraMoveY = playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY));
+    playerCameraMoveZ = -playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY));
+
   } else if (currentlyPressedKeys[68] && currentlyPressedKeys[87]) {
     // D & W
-    playerMovementLR += playerSpeed/2;
-    playerCameraPositionX -= playerSpeed/2;
-    playerMovementUpDown -= playerSpeed/2;
-    playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
-    playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
-    moveDownEnabler = 1;
+    playerMovementLR = playerSpeed/2;
+    playerCameraMoveX = -playerSpeed/2;
+    playerMovementUpDown = -playerSpeed/2;
+    playerCameraMoveY = -playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY));
+    playerCameraMoveZ = playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY));
+
   } else if (currentlyPressedKeys[87] && currentlyPressedKeys[65]) {
     // W & A
-    playerMovementUpDown -= playerSpeed/2;
-    playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
-    playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
-    moveDownEnabler = 1;
-    playerMovementLR -= playerSpeed/2;
-    playerCameraPositionX += playerSpeed/2;
+    playerMovementUpDown = -playerSpeed/2;
+    playerCameraMoveY = -playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY));
+    playerCameraMoveZ = playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY));
+    playerMovementLR = -playerSpeed/2;
+    playerCameraMoveX = playerSpeed/2;
+
   } else if (currentlyPressedKeys[65] && currentlyPressedKeys[83]) {
     // A & S
-    playerMovementLR -= playerSpeed/2;
-    playerCameraPositionX += playerSpeed/2;
-    playerMovementUpDown += playerSpeed/2;
-    playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
-    playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
-    moveUpEnabler = 1;
+    playerMovementLR = -playerSpeed/2;
+    playerCameraMoveX = playerSpeed/2;
+    playerMovementUpDown = playerSpeed/2;
+    playerCameraMoveY = playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY));
+    playerCameraMoveZ = -playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY));
+
   } else {
     if (currentlyPressedKeys[87]) {
       // W only
-      playerMovementUpDown -= playerSpeed;
-      playerCameraPositionY -= playerSpeed * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
-      playerCameraPositionZ += playerSpeed * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
-      moveDownEnabler = 1;
+      playerMovementUpDown = -playerSpeed;
+      playerCameraMoveY = -playerSpeed * Math.sin(degToRad(playerCameraRotationY));
+      playerCameraMoveZ = playerSpeed * Math.cos(degToRad(playerCameraRotationY));
+    } else {
+      playerMovementUpDown = 0;
+      playerCameraMoveY = 0;
+      playerCameraMoveZ = 0;
     }
     if (currentlyPressedKeys[65]) {
       // A only
-      playerMovementLR -= playerSpeed;
-      playerCameraPositionX += playerSpeed;
+      playerMovementLR = -playerSpeed;
+      playerCameraMoveX = playerSpeed;
+
+    } else {
+      playerMovementLR = 0;
+      playerCameraMoveX = 0;
     }
     if (currentlyPressedKeys[68]) {
       // D only
-      playerMovementLR += playerSpeed;
-      playerCameraPositionX -= playerSpeed;
+      playerMovementLR = playerSpeed;
+      playerCameraMoveX = -playerSpeed;
+
     }
     if (currentlyPressedKeys[83]) {
       // S only
-      playerMovementUpDown += playerSpeed;
-      playerCameraPositionY += playerSpeed * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
-      playerCameraPositionZ -= playerSpeed * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
-      moveUpEnabler = 1;
+      playerMovementUpDown = playerSpeed;
+      playerCameraMoveY = playerSpeed * Math.sin(degToRad(playerCameraRotationY));
+      playerCameraMoveZ = -playerSpeed * Math.cos(degToRad(playerCameraRotationY));
     }
 
   }
@@ -1632,7 +1684,7 @@ function switchCameraView() {
 
 function cameraMovement() {
   if (camera1) {
-    cameraPositionX = playerCameraPositionX;
+    cameraPositionX = playerCameraPositonX;
     cameraPositionY = playerCameraPositionY;
     cameraPositionZ = playerCameraPositionZ;
     cameraRotationY = playerCameraRotationY;
@@ -1682,49 +1734,16 @@ function start() {
       if (texturesLoaded == 5) {
         handleKeys();
         cameraMovement();
-        drawScene();
         drawBullets();
         updateLastPosition();
         upradteLastPlayerPosition();
         updateLastZombiesPositions();
+        drawScene();
       }
     }, 15);
   }
 }
 
-function upradteLastPlayerPosition() {
-    lastPlayerPosition.playerMovementLR = playerMovementLR;
-    lastPlayerPosition.playerMovementUpDown = playerMovementUpDown;
-    lastPlayerPosition.playerRotation = playerRotation;
-    lastPlayerPosition.playerCameraPositionX = playerCameraPositionX;
-    lastPlayerPosition.playerCameraPositionY = playerCameraPositionY;
-    lastPlayerPosition.playerCameraPositionZ = playerCameraPositionZ;
-    lastPlayerPosition.playerCameraRotationY = playerCameraRotationY;
-}
-
-function undoLastPlayerStep() {
-  playerMovementLR = lastPlayerPosition.playerMovementLR
-  playerMovementUpDown = lastPlayerPosition.playerMovementUpDown;
-  playerRotation = lastPlayerPosition.playerRotation;
-  playerCameraPositionX = lastPlayerPosition.playerCameraPositionX;
-  playerCameraPositionY = lastPlayerPosition.playerCameraPositionY;
-  playerCameraPositionZ = lastPlayerPosition.playerCameraPositionZ;
-  playerCameraRotationY = lastPlayerPosition.playerCameraRotationY;
-}
-
-function updateLastZombiesPositions() {
-  for (var n in zombies) {
-    lastZombiePositions[n].lastX = zombies[n].x;
-    lastZombiePositions[n].lastY = zombies[n].y;
-    lastZombiePositions[n].lastRot = zombies[n].rot;
-  }
-}
-
-function undoLastZombieStep(n) {
-  zombies[n].x = lastZombiePositions[n].lastX;
-  zombies[n].y = lastZombiePositions[n].lastY;
-  zombies[n].rot = lastZombiePositions[n].lastRot;
-}
 
 // prikaz/skrivanje pomoči:
 function togglePrikazPodatkov(){
