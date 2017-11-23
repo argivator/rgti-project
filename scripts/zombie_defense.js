@@ -7,6 +7,7 @@ var shaderProgram;
 var counterShowConsole = 0;
 
 // Buffers
+
 var worldVertexPositionBuffer = null;
 var worldVertexTextureCoordBuffer = null;
 
@@ -88,6 +89,8 @@ var playerRotation = 0;
 // izbira kamere
 var camera1 = true;
 var buttonVpressed = false;   // zazna pritisk tipke V za zamenjavo kamere (da se ob pritisku kamera ne zamenja 100x)
+var buttonBpressed = false;   // zazna pritisk tipke B za zamenjavo nacina vrtenja
+var rotation8Controlls = true;
 
 var cameraPositionX;
 var cameraPositionY;
@@ -122,6 +125,7 @@ function Zombie(X, Y, smerX, smerY, ms, rot){
   this.smerY = smerY;  // smerX (1 -> x se mora večati, -1 -> x se mora manjsati) (GLEDE NA IGRALCA)
   this.ms = ms;   // movement speed
   this.rot = rot; // rotacija
+  this.health = 100;
 }
 Zombie.prototype.draw = function(rot){
   mvPushMatrix();
@@ -405,15 +409,18 @@ function handleTextureLoaded(texture) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // funkcija za nalaganje sveta (podn)
 function loadWorld() {
-  //koordinate velikosti/oblike sveta
+    //koordinate velikosti/oblike sveta
   var vertexPositions = [
-     -10, 0, -4,
-     -10, 0,  10,
-      10, 0,  10,
+     -3.375, 0, -3.025,
+     -3.375, 0,  4.025,
+      3.375, 0,  4.025,
 
-     -10, 0, -4,
-      10, 0, -4,
-      10, 0,  10];
+     -3.375, 0, -3.025,
+      3.375, 0, -3.025,
+      3.375, 0,  4.025
+      ];
+
+
 
   //koordinate texture sveta (vecje stevilke (trenutno 5) ---> veckrat ponovljena textura)
   var vertexTextureCoords = [
@@ -847,7 +854,7 @@ function addBullet(){
   //console.log(playerMovementLR, playerMovementUpDown, playerRotation);
 }
 function drawBullets(){
-  
+
 
   for(var i in bullets){
     if(bullets[i]){
@@ -1060,11 +1067,11 @@ function drawScene() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // preventiva da gre igralec iz trave
-  if(playerXposition + playerMovementLR > 3.35) {
+  if(playerXposition + playerMovementLR > 3.3) {
     playerMovementLR = 0;
     playerCameraMoveX = 0;
   }
-  if(playerXposition + playerMovementLR < -3.35) {
+  if(playerXposition + playerMovementLR < -3.3) {
     playerMovementLR = 0;
     playerCameraMoveX = 0;
   }
@@ -1091,7 +1098,7 @@ function drawScene() {
     var wallRect7 = {x: -1.15, y: -0.9, width: 1.095, height: 0.12};
     var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
 
-    var playerXRect = {x: playerXposition + playerMovementLR, y: playerYposition, width: 0.07, height: 0.07};
+    var playerXRect = {x: playerXposition + playerMovementLR, y: playerYposition, width: 0.05, height: 0.05};
     if (collision(playerXRect, wallRect1) ||
         collision(playerXRect, wallRect2) ||
         collision(playerXRect, wallRect3) ||
@@ -1105,7 +1112,7 @@ function drawScene() {
       playerXposition += playerMovementLR;
       playerCameraPositonX += playerCameraMoveX;
     }
-    var playerYRect = {x: playerXposition, y: playerYposition + playerMovementUpDown, width: 0.07, height: 0.07};
+    var playerYRect = {x: playerXposition, y: playerYposition + playerMovementUpDown, width: 0.05, height: 0.05};
     if (collision(playerYRect, wallRect1) ||
         collision(playerYRect, wallRect2) ||
         collision(playerYRect, wallRect3) ||
@@ -1306,6 +1313,7 @@ function drawScene() {
 
 
   for(var i in zombies){
+    if (zombies[i] == null) continue;
     //zombies[i].draw();
 
 
@@ -1384,35 +1392,65 @@ function drawScene() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-      var zombieRect;
+      var zombieXRect;
       var sprX = zombies[i].ms * spremembaX;
-      if (zombies[i].smerX == 1) zombieRect = {x: zombies[i].x + sprX, y: zombies[i].y, width: 0.07, height: 0.07};
-      else zombieRect = {x: zombies[i].x - sprX, y: zombies[i].y, width: 0.07, height: 0.07};
-      if (collision(zombieRect, wallRect1) ||
-          collision(zombieRect, wallRect2) ||
-          collision(zombieRect, wallRect3) ||
-          collision(zombieRect, wallRect4) ||
-          collision(zombieRect, wallRect5) ||
-          collision(zombieRect, wallRect6) ||
-          collision(zombieRect, wallRect7) ||
-          collision(zombieRect, wallRect8)) {
+      if (zombies[i].smerX == 1) zombieXRect = {x: zombies[i].x + sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      else zombieXRect = {x: zombies[i].x - sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      if (collision(zombieXRect, wallRect1) ||
+          collision(zombieXRect, wallRect2) ||
+          collision(zombieXRect, wallRect3) ||
+          collision(zombieXRect, wallRect4) ||
+          collision(zombieXRect, wallRect5) ||
+          collision(zombieXRect, wallRect6) ||
+          collision(zombieXRect, wallRect7) ||
+          collision(zombieXRect, wallRect8)) {
           spremembaX = 0;
       }
 
+      var zombieYRect;
       var sprY = zombies[i].ms * spremembaY;
-      if (zombies[i].smerY == 1) zombieRect = {x: zombies[i].x, y: zombies[i].y + sprY, width: 0.07, height: 0.07};
-      else zombieRect = {x: zombies[i].x, y: zombies[i].y - sprY, width: 0.07, height: 0.07};
-      if (collision(zombieRect, wallRect1) ||
-          collision(zombieRect, wallRect2) ||
-          collision(zombieRect, wallRect3) ||
-          collision(zombieRect, wallRect4) ||
-          collision(zombieRect, wallRect5) ||
-          collision(zombieRect, wallRect6) ||
-          collision(zombieRect, wallRect7) ||
-          collision(zombieRect, wallRect8)) {
+      if (zombies[i].smerY == 1) zombieYRect = {x: zombies[i].x, y: zombies[i].y + sprY, width: 0.07, height: 0.07};
+      else zombieYRect = {x: zombies[i].x, y: zombies[i].y - sprY, width: 0.07, height: 0.07};
+      if (collision(zombieYRect, wallRect1) ||
+          collision(zombieYRect, wallRect2) ||
+          collision(zombieYRect, wallRect3) ||
+          collision(zombieYRect, wallRect4) ||
+          collision(zombieYRect, wallRect5) ||
+          collision(zombieYRect, wallRect6) ||
+          collision(zombieYRect, wallRect7) ||
+          collision(zombieYRect, wallRect8)) {
           spremembaY = 0;
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
+      var zombie2Rect;
+      for (j in zombies) {
+        if (j == i || zombies[j] == null) continue;
+
+        zombie2Rect = {x: zombies[j].x, y: zombies[j].y, width: 0.1, height: 0.1};
+        if (collision(zombieXRect, zombie2Rect)) spremembaX = 0;
+        if (collision(zombieYRect, zombie2Rect)) spremembaY = 0;
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      if (collision({x: playerXposition, y: playerYposition, width: 0.07, height: 0.07}, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
+        // GAME OVER PLAYER DEAD!!
+        console.log("YOU DEAD MAN!");
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      var bulletRect;
+      for (k in bullets) {
+        if (bullets[k] == null) continue;
+        bulletRect = {x: bullets[k].x, y: bullets[k].y, width: 0.1, height: 0.1};
+
+        if (collision(bulletRect, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
+          bullets[k] = null;
+          zombies[i].health -= 50;
+        }
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      if (zombies[i].health <= 0) {
+        zombies[i] = null;
+        continue;
+      }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       var test = spremembaX + spremembaY;
@@ -1637,12 +1675,44 @@ function handleKeys() {
     }
 
   }
-  if(currentlyPressedKeys[37]){ // left
+  if(currentlyPressedKeys[37] && !rotation8Controlls){ // left
     playerRotation += 2;
   }
-  if(currentlyPressedKeys[39]){ // right
+  if(currentlyPressedKeys[39]  && !rotation8Controlls){ // right
     playerRotation -= 2;
   }
+
+  if (currentlyPressedKeys[37] && currentlyPressedKeys[38] && rotation8Controlls) {
+    // Left & Up
+    playerRotation = 135;
+  } else if (currentlyPressedKeys[37] && currentlyPressedKeys[40] && rotation8Controlls) {
+    // Left & Down
+    playerRotation = 225;
+  } else if (currentlyPressedKeys[40] && currentlyPressedKeys[39] && rotation8Controlls) {
+    // Down & Right
+    playerRotation = 315;
+  } else if (currentlyPressedKeys[39] && currentlyPressedKeys[38] && rotation8Controlls) {
+    // Up & Right
+    playerRotation = 45;
+  } else {
+    if (currentlyPressedKeys[37] && rotation8Controlls) {
+      playerRotation = 180;
+    }
+    if (currentlyPressedKeys[38] && rotation8Controlls) {
+      playerRotation = 90;
+    }
+    if (currentlyPressedKeys[39] && rotation8Controlls) {
+      playerRotation = 0;
+    }
+    if (currentlyPressedKeys[40] && rotation8Controlls) {
+      playerRotation = 270;
+    }
+  }
+
+
+
+
+  ////////////////////// SHOOTING BULLETS ///////////////////////////////
   if(currentlyPressedKeys[32]){
     if(lahkoStrelja){
       addBullet();
@@ -1688,6 +1758,25 @@ function handleKeys() {
   else {
     buttonVpressed = false;
   }
+
+  // toggle rotation (8 smeri / vse smeri)
+  if (currentlyPressedKeys[66]) {
+    // B
+    if (!buttonBpressed) {
+      buttonBpressed = true;
+      switchRotationControls();
+    }
+    else{
+      buttonBpressed = false;
+    }
+  }
+}
+
+function switchRotationControls() {
+    if (rotation8Controlls)
+        rotation8Controlls = false;
+    else
+      rotation8Controlls = true;
 }
 
 function switchCameraView() {
@@ -1750,11 +1839,11 @@ function start() {
       if (texturesLoaded == 5) {
         handleKeys();
         cameraMovement();
-        
+
         drawScene();
         drawBullets();
       }
-    }, 15);
+    }, 20);
   }
 }
 
