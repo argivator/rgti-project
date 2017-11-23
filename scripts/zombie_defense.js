@@ -1091,7 +1091,7 @@ function drawScene() {
     var wallRect7 = {x: -1.15, y: -0.9, width: 1.095, height: 0.12};
     var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
 
-    var playerXRect = {x: playerXposition + playerMovementLR, y: playerYposition, width: 0.07, height: 0.07};
+    var playerXRect = {x: playerXposition + playerMovementLR, y: playerYposition, width: 0.05, height: 0.05};
     if (collision(playerXRect, wallRect1) ||
         collision(playerXRect, wallRect2) ||
         collision(playerXRect, wallRect3) ||
@@ -1105,7 +1105,7 @@ function drawScene() {
       playerXposition += playerMovementLR;
       playerCameraPositonX += playerCameraMoveX;
     }
-    var playerYRect = {x: playerXposition, y: playerYposition + playerMovementUpDown, width: 0.07, height: 0.07};
+    var playerYRect = {x: playerXposition, y: playerYposition + playerMovementUpDown, width: 0.05, height: 0.05};
     if (collision(playerYRect, wallRect1) ||
         collision(playerYRect, wallRect2) ||
         collision(playerYRect, wallRect3) ||
@@ -1421,6 +1421,11 @@ function drawScene() {
         zombie2Rect = {x: zombies[j].x, y: zombies[j].y, width: 0.1, height: 0.1};
         if (collision(zombieXRect, zombie2Rect)) spremembaX = 0;
         if (collision(zombieYRect, zombie2Rect)) spremembaY = 0;
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      if (collision({x: playerXposition, y: playerYposition, width: 0.07, height: 0.07}, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
+        // GAME OVER PLAYER DEAD!!
+        console.log("YOU DEAD MAN!");
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
