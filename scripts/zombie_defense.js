@@ -7,6 +7,7 @@ var shaderProgram;
 var counterShowConsole = 0;
 
 // Buffers
+
 var worldVertexPositionBuffer = null;
 var worldVertexTextureCoordBuffer = null;
 
@@ -88,6 +89,8 @@ var playerRotation = 0;
 // izbira kamere
 var camera1 = true;
 var buttonVpressed = false;   // zazna pritisk tipke V za zamenjavo kamere (da se ob pritisku kamera ne zamenja 100x)
+var buttonBpressed = false;   // zazna pritisk tipke B za zamenjavo nacina vrtenja
+var rotation8Controlls = true;
 
 var cameraPositionX;
 var cameraPositionY;
@@ -122,6 +125,7 @@ function Zombie(X, Y, smerX, smerY, ms, rot){
   this.smerY = smerY;  // smerX (1 -> x se mora večati, -1 -> x se mora manjsati) (GLEDE NA IGRALCA)
   this.ms = ms;   // movement speed
   this.rot = rot; // rotacija
+  this.health = 100;
 }
 Zombie.prototype.draw = function(rot){
   mvPushMatrix();
@@ -405,15 +409,18 @@ function handleTextureLoaded(texture) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // funkcija za nalaganje sveta (podn)
 function loadWorld() {
-  //koordinate velikosti/oblike sveta
+    //koordinate velikosti/oblike sveta
   var vertexPositions = [
-     -10, 0, -4,
-     -10, 0,  10,
-      10, 0,  10,
+     -3.375, 0, -3.025,
+     -3.375, 0,  4.025,
+      3.375, 0,  4.025,
 
-     -10, 0, -4,
-      10, 0, -4,
-      10, 0,  10];
+     -3.375, 0, -3.025,
+      3.375, 0, -3.025,
+      3.375, 0,  4.025
+      ];
+
+
 
   //koordinate texture sveta (vecje stevilke (trenutno 5) ---> veckrat ponovljena textura)
   var vertexTextureCoords = [
@@ -1060,11 +1067,11 @@ function drawScene() {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // preventiva da gre igralec iz trave
-  if(playerXposition + playerMovementLR > 3.35) {
+  if(playerXposition + playerMovementLR > 3.3) {
     playerMovementLR = 0;
     playerCameraMoveX = 0;
   }
-  if(playerXposition + playerMovementLR < -3.35) {
+  if(playerXposition + playerMovementLR < -3.3) {
     playerMovementLR = 0;
     playerCameraMoveX = 0;
   }
@@ -1306,6 +1313,7 @@ function drawScene() {
 
 
   for(var i in zombies){
+    if (zombies[i] == null) continue;
     //zombies[i].draw();
 
 
@@ -1416,7 +1424,7 @@ function drawScene() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
       var zombie2Rect;
       for (j in zombies) {
-        if (j == i) continue;
+        if (j == i || zombies[j] == null) continue;
 
         zombie2Rect = {x: zombies[j].x, y: zombies[j].y, width: 0.1, height: 0.1};
         if (collision(zombieXRect, zombie2Rect)) spremembaX = 0;
@@ -1426,6 +1434,22 @@ function drawScene() {
       if (collision({x: playerXposition, y: playerYposition, width: 0.07, height: 0.07}, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
         // GAME OVER PLAYER DEAD!!
         console.log("YOU DEAD MAN!");
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      var bulletRect;
+      for (k in bullets) {
+        if (bullets[k] == null) continue;
+        bulletRect = {x: bullets[k].x, y: bullets[k].y, width: 0.1, height: 0.1};
+
+        if (collision(bulletRect, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
+          bullets[k] = null;
+          zombies[i].health -= 50;
+        }
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      if (zombies[i].health <= 0) {
+        zombies[i] = null;
+        continue;
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1651,12 +1675,44 @@ function handleKeys() {
     }
 
   }
-  if(currentlyPressedKeys[37]){ // left
+  if(currentlyPressedKeys[37] && !rotation8Controlls){ // left
     playerRotation += 2;
   }
-  if(currentlyPressedKeys[39]){ // right
+  if(currentlyPressedKeys[39]  && !rotation8Controlls){ // right
     playerRotation -= 2;
   }
+
+  if (currentlyPressedKeys[37] && currentlyPressedKeys[38] && rotation8Controlls) {
+    // Left & Up
+    playerRotation = 135;
+  } else if (currentlyPressedKeys[37] && currentlyPressedKeys[40] && rotation8Controlls) {
+    // Left & Down
+    playerRotation = 225;
+  } else if (currentlyPressedKeys[40] && currentlyPressedKeys[39] && rotation8Controlls) {
+    // Down & Right
+    playerRotation = 315;
+  } else if (currentlyPressedKeys[39] && currentlyPressedKeys[38] && rotation8Controlls) {
+    // Up & Right
+    playerRotation = 45;
+  } else {
+    if (currentlyPressedKeys[37] && rotation8Controlls) {
+      playerRotation = 180;
+    }
+    if (currentlyPressedKeys[38] && rotation8Controlls) {
+      playerRotation = 90;
+    }
+    if (currentlyPressedKeys[39] && rotation8Controlls) {
+      playerRotation = 0;
+    }
+    if (currentlyPressedKeys[40] && rotation8Controlls) {
+      playerRotation = 270;
+    }
+  }
+
+
+
+
+  ////////////////////// SHOOTING BULLETS ///////////////////////////////
   if(currentlyPressedKeys[32]){
     if(lahkoStrelja){
       addBullet();
@@ -1702,6 +1758,25 @@ function handleKeys() {
   else {
     buttonVpressed = false;
   }
+
+  // toggle rotation (8 smeri / vse smeri)
+  if (currentlyPressedKeys[66]) {
+    // B
+    if (!buttonBpressed) {
+      buttonBpressed = true;
+      switchRotationControls();
+    }
+    else{
+      buttonBpressed = false;
+    }
+  }
+}
+
+function switchRotationControls() {
+    if (rotation8Controlls)
+        rotation8Controlls = false;
+    else
+      rotation8Controlls = true;
 }
 
 function switchCameraView() {
@@ -1768,7 +1843,7 @@ function start() {
         drawScene();
         drawBullets();
       }
-    }, 15);
+    }, 20);
   }
 }
 
