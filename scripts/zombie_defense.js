@@ -7,6 +7,8 @@ var konecIgre = false;
 
 var counterShowConsole = 0;
 
+var zombiesKilled = 0;
+
 // Buffers
 var outerWallVertexPositionBuffer= null;
 var outterWallVertexTextureCoordBuffer = null;
@@ -1628,7 +1630,7 @@ function drawScene() {
         //console.log("YOU DEAD MAN!");
         konecIgre = true;
         document.getElementById("gameOver").classList.toggle("skrito");
-
+        document.getElementById("score").innerHTML = zombiesKilled;
         var audio = new Audio('./sounds/gameOver.wav');
         audio.play();
 
@@ -1652,6 +1654,7 @@ function drawScene() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
       if (zombies[i].health <= 0) {
         zombies[i] = null;
+        zombiesKilled += 1;
         var zombieDead = new Audio('./sounds/zombieDied.wav');
         zombieDead.play();
         continue;
@@ -1754,6 +1757,8 @@ function collision(rect1, rect2) {
 function handleKeyDown(event) {
   // storing the pressed state for individual key
   currentlyPressedKeys[event.keyCode] = true;
+  event.preventDefault();
+  
 }
 
 function handleKeyUp(event) {

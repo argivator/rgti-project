@@ -71,6 +71,7 @@ canvas {
   font-family: sans-serif;
 }
 #gameOver {
+  text-align: center;
   font-size: 150px;
   color: red;
   background-color: black;
