@@ -1642,8 +1642,11 @@ function drawScene() {
         if (collision(bulletRect, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
           bullets[k] = null;
           zombies[i].health -= 50;
-          var zombieHitAudio = new Audio('./sounds/zombieHit.wav');
-          zombieHitAudio.play();
+          if(zombies[i].health > 0){
+            var zombieHitAudio = new Audio('./sounds/zombieHit.wav');
+            zombieHitAudio.play();
+          }
+          
         }
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
