@@ -13,3 +13,24 @@ canvas {
 .tPomoci {
   border: 1px solid black;
 }
+
+#metkiStevec {
+  display: inline block;
+  position: relative;
+  left: 0px;
+  top: -890px;
+  font-size: 30px;
+  text-decoration: bold;
+  
+}
+#stevec {
+  position: relative;
+  left: 10px;
+  font-size: 40px;
+}
+.red {
+  color: red;
+}
+.yellow {
+  color: yellow;
+}
