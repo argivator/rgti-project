@@ -37,6 +37,7 @@ var lahkoStrelja = true;
 
 var stMetkov = 5;
 
+
 // wall config
 
 var walls = [];
@@ -966,6 +967,8 @@ function addBullet(){
   bullets.push(new Bullet(playerXposition, playerYposition, playerRotation));
   console.log(playerXposition + " " + playerYposition);
   //console.log(playerMovementLR, playerMovementUpDown, playerRotation);
+  var bulletSound = new Audio('./sounds/bullet.wav');
+  bulletSound.play();
 }
 function drawBullets(){
 
@@ -1625,6 +1628,10 @@ function drawScene() {
         //console.log("YOU DEAD MAN!");
         konecIgre = true;
         document.getElementById("gameOver").classList.toggle("skrito");
+
+        var audio = new Audio('./sounds/gameOver.wav');
+        audio.play();
+
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
       var bulletRect;
@@ -1635,11 +1642,15 @@ function drawScene() {
         if (collision(bulletRect, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
           bullets[k] = null;
           zombies[i].health -= 50;
+          var zombieHitAudio = new Audio('./sounds/zombieHit.wav');
+          zombieHitAudio.play();
         }
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
       if (zombies[i].health <= 0) {
         zombies[i] = null;
+        var zombieDead = new Audio('./sounds/zombieDied.wav');
+        zombieDead.play();
         continue;
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1919,7 +1930,9 @@ function handleKeys() {
         document.getElementById("metkiStevec").classList.toggle("red");
         document.getElementById("metkiStevec").classList.toggle("yellow");
         setTimeout(function(){
-          lahkoStrelja = true;
+          setTimeout(function(){
+            lahkoStrelja = true;
+          }, 500);
           stMetkov = 5;
           document.getElementById("stevec").innerHTML = stMetkov;
           document.getElementById("metkiStevec").classList.toggle("red");
