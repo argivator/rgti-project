@@ -30,6 +30,8 @@ var bullets = [];
 var stevecMetkov = 0; // za identifikacijo dolocenega metka
 var lahkoStrelja = true;
 
+var stMetkov = 5;
+
 // wall config
 
 var walls = [];
@@ -342,7 +344,7 @@ function initTextures() {
   grassTexture.image.onload = function () {
     handleTextureLoaded(grassTexture)
   }
-  grassTexture.image.src = "./assets/grass.png";
+  grassTexture.image.src = "./assets/grass.jpg";
 
   playerTexture = gl.createTexture();
   playerTexture.image = new Image();
@@ -375,7 +377,7 @@ function initTextures() {
   bulletTexture.image.onload = function(){
     handleTextureLoaded(bulletTexture);
   }
-  bulletTexture.image.src = "./assets/bullet.png";
+  bulletTexture.image.src = "./assets/bullet.jpg";
 
 }
 
@@ -1647,10 +1649,27 @@ function handleKeys() {
   if(currentlyPressedKeys[32]){
     if(lahkoStrelja){
       addBullet();
+      stMetkov = stMetkov - 1;
+      document.getElementById("stevec").innerHTML = stMetkov;
       lahkoStrelja = false;
-      setTimeout(function(){
-        lahkoStrelja = true;
-      }, 500);
+      if(stMetkov > 0){
+        setTimeout(function(){
+          lahkoStrelja = true;
+        }, 500);
+      }else{
+        document.getElementById("stevec").innerHTML = "RELOADING!";
+        document.getElementById("metkiStevec").classList.toggle("red");
+        document.getElementById("metkiStevec").classList.toggle("yellow");
+        setTimeout(function(){
+          lahkoStrelja = true;
+          stMetkov = 5;
+          document.getElementById("stevec").innerHTML = stMetkov;
+          document.getElementById("metkiStevec").classList.toggle("red");
+          document.getElementById("metkiStevec").classList.toggle("yellow");
+        }, 1000);
+        
+      }
+      
     }
   }
 
@@ -1708,7 +1727,7 @@ function start() {
 
   // Only continue if WebGL is available and working
   if (gl) {
-    gl.clearColor(0.52, 0.81, 0.92, 1.0);                      // Set clear color to black, fully opaque
+    gl.clearColor(0.0, 0.6, 0.6, 1.0);                      // Set clear color to black, fully opaque
     gl.clearDepth(1.0);                                     // Clear everything
     gl.enable(gl.DEPTH_TEST);                               // Enable depth testing
     gl.depthFunc(gl.LEQUAL);                                // Near things obscure far things
