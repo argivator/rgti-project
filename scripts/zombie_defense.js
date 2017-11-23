@@ -895,37 +895,37 @@ function drawBullets(){
           deltaY = -deltaY;
         }
 
-  
+
         mvPushMatrix();
-  
+
         mat4.identity(mvMatrix);
         mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
-  
+
         mat4.translate(mvMatrix, [x, 0, y]);
         mat4.rotateY(mvMatrix, rot);
-        
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, bulletTexture);
         gl.uniform1i(shaderProgram.samplerUniform, 0);
-      
+
         gl.bindBuffer(gl.ARRAY_BUFFER, bulletVertexTextureCoordBuffer);
         gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, bulletVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-      
+
         gl.bindBuffer(gl.ARRAY_BUFFER, bulletVertexPositionBuffer);
         gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, bulletVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-      
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bulletVertexIndexBuffer);
         setMatrixUniforms();
         gl.drawElements(gl.TRIANGLES, bulletVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
         //console.log("pushed real good");
-    
+
         mvPopMatrix();
-  
+
         bullets[i].x += deltaX;
         bullets[i].y += deltaY;
-  
+
       }
-      
+
     }
   }
 }
@@ -1495,12 +1495,6 @@ function collision(rect1, rect2) {
     return false;
 }
 
-function movingLeft(rect1, rect2) {
-  return rect1.x < rect2.x;
-}
-function movingDown(rect1, rect2) {
-  return rect1.y < rect2.y;
-}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                        KEYS
@@ -1667,9 +1661,9 @@ function handleKeys() {
           document.getElementById("metkiStevec").classList.toggle("red");
           document.getElementById("metkiStevec").classList.toggle("yellow");
         }, 1000);
-        
+
       }
-      
+
     }
   }
 
@@ -1754,10 +1748,6 @@ function start() {
         handleKeys();
         cameraMovement();
         drawBullets();
-        /*
-        updateLastPosition();
-        upradteLastPlayerPosition();
-        updateLastZombiesPositions(); */
         drawScene();
       }
     }, 15);
