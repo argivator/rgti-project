@@ -1735,9 +1735,10 @@ function start() {
         handleKeys();
         cameraMovement();
         drawBullets();
+        /*
         updateLastPosition();
         upradteLastPlayerPosition();
-        updateLastZombiesPositions();
+        updateLastZombiesPositions(); */
         drawScene();
       }
     }, 15);
