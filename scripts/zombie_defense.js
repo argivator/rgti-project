@@ -64,6 +64,8 @@ var playerCameraRotationY = 40;
 // stikali za omogocanje premikanja kamere gor dol
 var moveUpEnabler = 1;
 var moveDownEnabler = 1;
+var moveLeftEnabler = 1;
+var moveRightEnabler = 1;
 
 var lastPlayerPosition = {playerMovementLR: 0, playerMovementUpDown: 0, playerRotation: 0, playerCameraPositionX: 0, playerCameraPositionY: -4.5, playerCameraPositionY: 2.7, playerCameraRotationY: 40};
 //premik "igralca" levo/desno
@@ -983,37 +985,66 @@ function drawScene() {
 
 
     //collisionDetection
-    var wallRect1 = {x: 1.1, y: -0.9, width: 0.12, height: 1.1};
-    if (collision(playerRect, wallRect1)) {
-        undoLastPlayerStep()
-    }
+    var wallRect1 = {x: 1.1, y: -0.8, width: 0.12, height: 1.0};
     var wallRect2 = {x: 1.1, y: 0.5, width: 0.12, height: 1};
-    if (collision(playerRect, wallRect2)) {
-        undoLastPlayerStep()
-    }
-    var wallRect3 = {x: 0.11, y: 1.4, width: 1, height: 0.12};
-    if (collision(playerRect, wallRect3)) {
-      undoLastPlayerStep();
-    }
+    var wallRect3 = {x: 0.11, y: 1.4, width: 1.1, height: 0.12};
     var wallRect4 = {x: -1.15 , y: 1.4, width: 1, height: 0.12};
-    if (collision(playerRect, wallRect4)) {
-      undoLastPlayerStep();
-    }
     var wallRect5 = {x: -1.2, y: 0.5, width: 0.12, height: 1};
-    if (collision(playerRect, wallRect5)) {
-      undoLastPlayerStep();
-    }
-    var wallRect6 = {x: -1.2, y: -0.9, width: 0.12, height: 1.05};
-    if (collision(playerRect, wallRect6)) {
-      undoLastPlayerStep();
-    }
-    var wallRect7 = {x: -1.2, y: -0.9, width: 1.095, height: 0.12};
-    if (collision(playerRect, wallRect7)) {
-      undoLastPlayerStep();
-    }
+    var wallRect6 = {x: -1.2, y: -0.8, width: 0.12, height: 0.95};
+    var wallRect7 = {x: -1.15, y: -0.9, width: 1.095, height: 0.12};
     var wallRect8 = {x: 0.17, y: -0.9, width: 1, height: 0.12};
-    if (collision(playerRect, wallRect8)) {
-      undoLastPlayerStep();
+
+    // DESNI ZID
+    if (collision(playerRect, wallRect1)) {
+          if (movingLeft(playerRect, wallRect1))
+              moveLeftEnabler = 0;
+          else
+              moveRightEnabler = 0;
+    } else if (collision(playerRect, wallRect2)) {
+          if (movingLeft(playerRect, wallRect2))
+              moveLeftEnabler = 0;
+          else
+              moveRightEnabler = 0;
+          // LEVI ZID
+    } else if (collision(playerRect, wallRect5)) {
+          if (movingLeft(playerRect, wallRect5))
+              moveLeftEnabler = 0;
+          else
+              moveRightEnabler = 0;
+    } else if (collision(playerRect, wallRect6)) {
+          if (movingLeft(playerRect, wallRect6))
+              moveLeftEnabler = 0;
+          else
+              moveRightEnabler = 0;
+    } else {
+          moveLeftEnabler = 1;
+          moveRightEnabler = 1;
+    }
+
+    // spodnji zid
+    if (collision(playerRect, wallRect3)) {
+          if (movingDown(playerRect, wallRect3))
+              moveDownEnabler = 0;
+          else
+              moveUpEnabler = 0;
+    } else if (collision(playerRect, wallRect4)) {
+          if (movingDown(playerRect, wallRect4))
+            moveDownEnabler = 0;
+          else
+            moveUpEnabler = 0;
+    } else if (collision(playerRect, wallRect7)) {
+          if (movingDown(playerRect, wallRect7))
+              moveDownEnabler = 0;
+          else
+              moveUpEnabler = 0;
+    } else if (collision(playerRect, wallRect8)) {
+          if (movingDown(playerRect, wallRect8))
+              moveDownEnabler = 0;
+          else
+              moveUpEnabler = 0;
+    } else {
+        moveUpEnabler = 1;
+        moveDownEnabler = 1;
     }
 
 
@@ -1195,6 +1226,12 @@ function collision(rect1, rect2) {
     return false;
 }
 
+function movingLeft(rect1, rect2) {
+  return rect1.x < rect2.x;
+}
+function movingDown(rect1, rect2) {
+  return rect1.y < rect2.y;
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                        KEYS
@@ -1270,57 +1307,63 @@ function handleKeys() {
 
   if (currentlyPressedKeys[68] && currentlyPressedKeys[83]) {
     //D & S
-    playerMovementLR += playerSpeed/2;
-    playerCameraPositionX -= playerSpeed/2;
-    playerMovementUpDown += playerSpeed/2;
+    playerMovementLR += playerSpeed/2 * moveLeftEnabler;
+    playerCameraPositionX -= playerSpeed/2 * moveLeftEnabler;
+    playerMovementUpDown += playerSpeed/2 * moveDownEnabler;
     playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
     playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
     moveUpEnabler = 1;
+    moveRightEnabler = 1;
   } else if (currentlyPressedKeys[68] && currentlyPressedKeys[87]) {
     // D & W
-    playerMovementLR += playerSpeed/2;
-    playerCameraPositionX -= playerSpeed/2;
-    playerMovementUpDown -= playerSpeed/2;
+    playerMovementLR += playerSpeed/2 * moveLeftEnabler;
+    playerCameraPositionX -= playerSpeed/2 * moveLeftEnabler;
+    playerMovementUpDown -= playerSpeed/2 * moveUpEnabler;
     playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
     playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
     moveDownEnabler = 1;
+    moveRightEnabler = 1;
   } else if (currentlyPressedKeys[87] && currentlyPressedKeys[65]) {
     // W & A
-    playerMovementUpDown -= playerSpeed/2;
+    playerMovementUpDown -= playerSpeed/2 * moveUpEnabler;
     playerCameraPositionY -= playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
     playerCameraPositionZ += playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
+    playerMovementLR -= playerSpeed/2 * moveRightEnabler;
+    playerCameraPositionX += playerSpeed/2 * moveRightEnabler;
+    moveLeftEnabler = 1;
     moveDownEnabler = 1;
-    playerMovementLR -= playerSpeed/2;
-    playerCameraPositionX += playerSpeed/2;
   } else if (currentlyPressedKeys[65] && currentlyPressedKeys[83]) {
     // A & S
-    playerMovementLR -= playerSpeed/2;
-    playerCameraPositionX += playerSpeed/2;
-    playerMovementUpDown += playerSpeed/2;
+    playerMovementLR -= playerSpeed/2 * moveRightEnabler;
+    playerCameraPositionX += playerSpeed/2 * moveRightEnabler;
+    playerMovementUpDown += playerSpeed/2 * moveDownEnabler;
     playerCameraPositionY += playerSpeed/2 * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
     playerCameraPositionZ -= playerSpeed/2 * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
     moveUpEnabler = 1;
+    moveLeftEnabler = 1;
   } else {
     if (currentlyPressedKeys[87]) {
       // W only
-      playerMovementUpDown -= playerSpeed;
+      playerMovementUpDown -= playerSpeed * moveUpEnabler;
       playerCameraPositionY -= playerSpeed * Math.sin(degToRad(playerCameraRotationY)) * moveUpEnabler;
       playerCameraPositionZ += playerSpeed * Math.cos(degToRad(playerCameraRotationY)) * moveUpEnabler;
       moveDownEnabler = 1;
     }
     if (currentlyPressedKeys[65]) {
       // A only
-      playerMovementLR -= playerSpeed;
-      playerCameraPositionX += playerSpeed;
+      playerMovementLR -= playerSpeed * moveRightEnabler;
+      playerCameraPositionX += playerSpeed * moveRightEnabler;
+      moveLeftEnabler = 1;
     }
     if (currentlyPressedKeys[68]) {
       // D only
-      playerMovementLR += playerSpeed;
-      playerCameraPositionX -= playerSpeed;
+      playerMovementLR += playerSpeed * moveLeftEnabler;
+      playerCameraPositionX -= playerSpeed * moveLeftEnabler;
+      moveRightEnabler = 1;
     }
     if (currentlyPressedKeys[83]) {
       // S only
-      playerMovementUpDown += playerSpeed;
+      playerMovementUpDown += playerSpeed * moveDownEnabler;
       playerCameraPositionY += playerSpeed * Math.sin(degToRad(playerCameraRotationY)) * moveDownEnabler;
       playerCameraPositionZ -= playerSpeed * Math.cos(degToRad(playerCameraRotationY)) * moveDownEnabler;
       moveUpEnabler = 1;
