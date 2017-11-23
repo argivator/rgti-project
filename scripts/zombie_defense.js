@@ -1757,7 +1757,10 @@ function collision(rect1, rect2) {
 function handleKeyDown(event) {
   // storing the pressed state for individual key
   currentlyPressedKeys[event.keyCode] = true;
-  event.preventDefault();
+  if(event.keyCode != 116){ // ni f5
+    event.preventDefault();
+  }
+
   
 }
 
