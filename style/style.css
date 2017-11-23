@@ -34,3 +34,22 @@ canvas {
 .yellow {
   color: yellow;
 }
+.levo {
+  position: absolute;
+}
+#togglePrikaz {
+  position: absolute;
+  top: 1px;
+  background-color: white;
+  border: 1px solid black;
+
+}
+#pomoc {
+  position: absolute;
+  top: 2em;
+  background-color: white;
+  border: 1px solid black;
+}
+.vrstica {
+  border: 1px solid black;
+}

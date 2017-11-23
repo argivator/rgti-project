@@ -48,21 +48,25 @@
 	  <div id="metkiStevec" class="yellow"><bold>AMMO:</bold><span id="stevec">5</span></div>
 		</div>
 		<br />
-		<button id="togglePrikaz" onclick=togglePrikazPodatkov()>Prikaži pomoč</button>
-		<div class="skrito" id="pomoc">
+		<button id="togglePrikaz" onclick=togglePrikazPodatkov() class="levo">Prikaži pomoč</button>
+		<div class="skrito levo" id="pomoc">
 			POMOČ:
 			<table class="tPomoci">
 				<tr>
-					<td>W,A,S,D</td>
-					<td>Premikanje karakterja GOR, LEVO, DOL, DESNO</td>
+					<td class="vrstica">W,A,S,D</td>
+					<td class="vrstica">Premikanje karakterja GOR, LEVO, DOL, DESNO</td>
 				</tr>
 				<tr>
-					<td>LEFT, RIGHT</td>
-					<td>Vrtenje karakterja LEVO, DESNO</td>
+					<td class="vrstica">LEFT, RIGHT</td>
+					<td class="vrstica">Vrtenje karakterja LEVO, DESNO</td>
 				</tr>
 				<tr>
-					<td>V</td>
-					<td>Toggle camera view</td>
+					<td class="vrstica">V</td>
+					<td class="vrstica">Toggle camera view</td>
+				</tr>
+				<tr>
+					<td class="vrstica">SPACE</td>
+					<td class="vrstica">Streljanje metkov</td>
 				</tr>
 			</table>
 
