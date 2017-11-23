@@ -369,7 +369,7 @@ function initTextures() {
   wallTexture.image.onload = function(){
     handleTextureLoaded(wallTexture);
   }
-  wallTexture.image.src = "./assets/wall.png";
+  wallTexture.image.src = "./assets/wall.jpg";
 
   // bulleti
   bulletTexture = gl.createTexture();
