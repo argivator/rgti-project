@@ -3,6 +3,7 @@ var canvas;
 var gl;
 var shaderProgram;
 
+var konecIgre = false;
 
 var counterShowConsole = 0;
 
@@ -1621,7 +1622,9 @@ function drawScene() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
       if (collision({x: playerXposition, y: playerYposition, width: 0.07, height: 0.07}, {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07})) {
         // GAME OVER PLAYER DEAD!!
-        console.log("YOU DEAD MAN!");
+        //console.log("YOU DEAD MAN!");
+        konecIgre = true;
+        document.getElementById("gameOver").classList.toggle("skrito");
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
       var bulletRect;
@@ -2024,17 +2027,20 @@ function start() {
 
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
-      if (texturesLoaded == 5) {
-        handleKeys();
-        cameraMovement();
-
-        drawScene();
-        drawBullets();
-        if(!levelClear){
-          manageLevel();
+      if(!konecIgre){
+        if (texturesLoaded == 5) {
+          handleKeys();
+          cameraMovement();
+  
+          drawScene();
+          drawBullets();
+          if(!levelClear){
+            manageLevel();
+          }
+  
         }
-
       }
+      
     }, 20);
   }
 }
