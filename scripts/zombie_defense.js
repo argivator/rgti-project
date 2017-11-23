@@ -36,9 +36,15 @@ var stMetkov = 5;
 // wall config
 
 var walls = [];
+// level config
+
+var level = 1;
+var levelClear = false;
+var zacetnoZombijev = 5;
 
 // zombie configurations
-var zombiesNr = 5;
+
+var zombiesNr = zacetnoZombijev;
 var zombies = [];
 var zombieMS = 0;
 var zombieXsmer = 1;
@@ -1051,7 +1057,46 @@ function loadBullet(){
   bulletVertexIndexBuffer.itemSize = 1;
   bulletVertexIndexBuffer.numItems = 36;
 }
+function manageLevel(){
+  var vsiMrtvi = true;
 
+  for(var i in zombies){
+    if(zombies[i] != null) vsiMrtvi = false;
+  }
+
+  if(vsiMrtvi){
+    levelClear = true;
+    document.getElementById("valTekst").classList.toggle("skrito");
+    document.getElementById("valSt").classList.toggle("skrito");
+
+    zombies = [];
+    level++;
+    zombiesNr = zacetnoZombijev * level;
+
+    setTimeout(function(){
+      initZombies();
+      levelClear = false;
+      document.getElementById("valTekst").classList.toggle("skrito");
+      document.getElementById("valSt").classList.toggle("skrito");
+
+      
+    }, 10000);
+    var sekund = 10;
+    reset();
+    function reset(){
+      document.getElementById("valSt").innerHTML = sekund;
+      sekund -= 1;
+      if(sekund >= 0){
+        setTimeout(reset, 1000);
+      }
+      
+    }
+    
+  }
+
+
+
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1842,6 +1887,10 @@ function start() {
 
         drawScene();
         drawBullets();
+        if(!levelClear){
+          manageLevel();
+        }
+
       }
     }, 20);
   }
