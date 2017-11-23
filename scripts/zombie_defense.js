@@ -29,7 +29,6 @@ var walls = [];
 // zombie configurations
 var zombiesNr = 5;
 var zombies = [];
-var lastZombiePositions = [];
 var zombieMS = 0;
 var zombieXsmer = 1;
 var zombieYsmer = 1;
@@ -626,8 +625,6 @@ function loadPlayer() {
 function initZombies(){
 
   for(var i = 0; i < zombiesNr; i++){
-    var tmp = {lastX: 0, lastY: 0, lastRot: 0};
-    lastZombiePositions.push(tmp);
     var st = Math.floor((Math.random() * 8) + 1);
     initZombie(st);
     }
@@ -1121,6 +1118,39 @@ function drawScene() {
       var spremembaX = deltaX / vsotaObeh;
       var spremembaY = deltaY / vsotaObeh;
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+      var zombieRect;
+      var sprX = zombies[i].ms * spremembaX;
+      if (zombies[i].smerX == 1) zombieRect = {x: zombies[i].x + sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      else zombieRect = {x: zombies[i].x - sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      if (collision(zombieRect, wallRect1) ||
+          collision(zombieRect, wallRect2) ||
+          collision(zombieRect, wallRect3) ||
+          collision(zombieRect, wallRect4) ||
+          collision(zombieRect, wallRect5) ||
+          collision(zombieRect, wallRect6) ||
+          collision(zombieRect, wallRect7) ||
+          collision(zombieRect, wallRect8)) {
+          spremembaX = 0;
+      }
+
+      var sprY = zombies[i].ms * spremembaY;
+      if (zombies[i].smerY == 1) zombieRect = {x: zombies[i].x, y: zombies[i].y + sprY, width: 0.07, height: 0.07};
+      else zombieRect = {x: zombies[i].x, y: zombies[i].y - sprY, width: 0.07, height: 0.07};
+      if (collision(zombieRect, wallRect1) ||
+          collision(zombieRect, wallRect2) ||
+          collision(zombieRect, wallRect3) ||
+          collision(zombieRect, wallRect4) ||
+          collision(zombieRect, wallRect5) ||
+          collision(zombieRect, wallRect6) ||
+          collision(zombieRect, wallRect7) ||
+          collision(zombieRect, wallRect8)) {
+          spremembaY = 0;
+      }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
       var test = spremembaX + spremembaY;
       //console.log("Vsota: " + vsotaObeh + ", X + Y: " + test);
       var sprememba;
@@ -1183,17 +1213,7 @@ function drawScene() {
       //zombies[i].draw(zombies[i]);
    // }
 
-      zombieRect = {x: zombies[i].x, y: zombies[i].y, width: 0.07, height: 0.07};
-      if (collision(zombieRect, wallRect1) ||
-          collision(zombieRect, wallRect2) ||
-          collision(zombieRect, wallRect3) ||
-          collision(zombieRect, wallRect4) ||
-          collision(zombieRect, wallRect5) ||
-          collision(zombieRect, wallRect6) ||
-          collision(zombieRect, wallRect7) ||
-          collision(zombieRect, wallRect8)) {
-          undoLastZombieStep(i);
-        }
+
 
  }
 }
@@ -1446,27 +1466,11 @@ function start() {
         handleKeys();
         cameraMovement();
         drawScene()
-        updateLastZombiesPositions();
       }
     }, 15);
   }
 }
 
-
-
-function updateLastZombiesPositions() {
-  for (var n in zombies) {
-    lastZombiePositions[n].lastX = zombies[n].x;
-    lastZombiePositions[n].lastY = zombies[n].y;
-    lastZombiePositions[n].lastRot = zombies[n].rot;
-  }
-}
-
-function undoLastZombieStep(n) {
-  zombies[n].x = lastZombiePositions[n].lastX;
-  zombies[n].y = lastZombiePositions[n].lastY;
-  zombies[n].rot = lastZombiePositions[n].lastRot;
-}
 
 // prikaz/skrivanje pomoči:
 function togglePrikazPodatkov(){
