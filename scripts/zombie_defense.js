@@ -847,7 +847,7 @@ function addBullet(){
   //console.log(playerMovementLR, playerMovementUpDown, playerRotation);
 }
 function drawBullets(){
-  
+
 
   for(var i in bullets){
     if(bullets[i]){
@@ -1384,35 +1384,44 @@ function drawScene() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-      var zombieRect;
+      var zombieXRect;
       var sprX = zombies[i].ms * spremembaX;
-      if (zombies[i].smerX == 1) zombieRect = {x: zombies[i].x + sprX, y: zombies[i].y, width: 0.07, height: 0.07};
-      else zombieRect = {x: zombies[i].x - sprX, y: zombies[i].y, width: 0.07, height: 0.07};
-      if (collision(zombieRect, wallRect1) ||
-          collision(zombieRect, wallRect2) ||
-          collision(zombieRect, wallRect3) ||
-          collision(zombieRect, wallRect4) ||
-          collision(zombieRect, wallRect5) ||
-          collision(zombieRect, wallRect6) ||
-          collision(zombieRect, wallRect7) ||
-          collision(zombieRect, wallRect8)) {
+      if (zombies[i].smerX == 1) zombieXRect = {x: zombies[i].x + sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      else zombieXRect = {x: zombies[i].x - sprX, y: zombies[i].y, width: 0.07, height: 0.07};
+      if (collision(zombieXRect, wallRect1) ||
+          collision(zombieXRect, wallRect2) ||
+          collision(zombieXRect, wallRect3) ||
+          collision(zombieXRect, wallRect4) ||
+          collision(zombieXRect, wallRect5) ||
+          collision(zombieXRect, wallRect6) ||
+          collision(zombieXRect, wallRect7) ||
+          collision(zombieXRect, wallRect8)) {
           spremembaX = 0;
       }
 
+      var zombieYRect;
       var sprY = zombies[i].ms * spremembaY;
-      if (zombies[i].smerY == 1) zombieRect = {x: zombies[i].x, y: zombies[i].y + sprY, width: 0.07, height: 0.07};
-      else zombieRect = {x: zombies[i].x, y: zombies[i].y - sprY, width: 0.07, height: 0.07};
-      if (collision(zombieRect, wallRect1) ||
-          collision(zombieRect, wallRect2) ||
-          collision(zombieRect, wallRect3) ||
-          collision(zombieRect, wallRect4) ||
-          collision(zombieRect, wallRect5) ||
-          collision(zombieRect, wallRect6) ||
-          collision(zombieRect, wallRect7) ||
-          collision(zombieRect, wallRect8)) {
+      if (zombies[i].smerY == 1) zombieYRect = {x: zombies[i].x, y: zombies[i].y + sprY, width: 0.07, height: 0.07};
+      else zombieYRect = {x: zombies[i].x, y: zombies[i].y - sprY, width: 0.07, height: 0.07};
+      if (collision(zombieYRect, wallRect1) ||
+          collision(zombieYRect, wallRect2) ||
+          collision(zombieYRect, wallRect3) ||
+          collision(zombieYRect, wallRect4) ||
+          collision(zombieYRect, wallRect5) ||
+          collision(zombieYRect, wallRect6) ||
+          collision(zombieYRect, wallRect7) ||
+          collision(zombieYRect, wallRect8)) {
           spremembaY = 0;
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
+      var zombie2Rect;
+      for (j in zombies) {
+        if (j == i) continue;
+
+        zombie2Rect = {x: zombies[j].x, y: zombies[j].y, width: 0.1, height: 0.1};
+        if (collision(zombieXRect, zombie2Rect)) spremembaX = 0;
+        if (collision(zombieYRect, zombie2Rect)) spremembaY = 0;
+      }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       var test = spremembaX + spremembaY;
@@ -1750,7 +1759,7 @@ function start() {
       if (texturesLoaded == 5) {
         handleKeys();
         cameraMovement();
-        
+
         drawScene();
         drawBullets();
       }
