@@ -7,6 +7,9 @@ var shaderProgram;
 var counterShowConsole = 0;
 
 // Buffers
+var outerWallVertexPositionBuffer= null;
+var outterWallVertexTextureCoordBuffer = null;
+var outterWallVertexIndexBuffer = null;
 
 var worldVertexPositionBuffer = null;
 var worldVertexTextureCoordBuffer = null;
@@ -409,7 +412,111 @@ function handleTextureLoaded(texture) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // funkcija za nalaganje sveta (podn)
 function loadWorld() {
-    //koordinate velikosti/oblike sveta
+  // outer wall
+  var oWVertexPositions = [
+    -3.375, 0,  4.025,
+    -3.375, 0, -3.025,
+    -3.375, 4, -3.025,
+    -3.375, 4,  4.025,
+
+    -3.375, 0, -3.025,
+    3.375, 0, -3.025,
+    3.375, 4, -3.025,
+    -3.375, 4, -3.025,
+
+    3.375, 0, -3.025,
+    3.375, 0, 4.025,
+    3.375, 4, 4.025,
+    3.375, 4, -3.025,
+
+    -3.375, 0,  4.025,
+    3.375, 0,  4.025,
+    3.375, 0.01,  4.025,
+    -3.375, 0.01,  4.025,
+
+    -6, 0.01,  4.025,
+    6, 0.01, 4.025,
+    6, 0.01, 7,
+    -6, 0.01, 7,
+
+    -6, 0.01, 4.025,
+    -3.37, 0.01, 4.025,
+    -3.37, 4, 4.025,
+    -6, 4, 4.025,
+
+    3.37, 0.01, 4.025,
+    6, 0.01, 4.025,
+    6, 4, 4.025,
+    3.37, 4, 4.025
+  ];
+
+  outerWallVertexPositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, outerWallVertexPositionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oWVertexPositions), gl.STATIC_DRAW);
+  outerWallVertexPositionBuffer.itemSize = 3;
+  outerWallVertexPositionBuffer.numItems = 28;
+
+  var oWvertexTextureCoords = [
+    0, 4,
+    4, 4,
+    4, 0,
+    0, 0,
+
+    0, 4,
+    4, 4,
+    4, 0,
+    0, 0,
+
+    0, 4,
+    4, 4,
+    4, 0,
+    0, 0,
+
+    0, 1,
+    4, 1,
+    4, 0,
+    0, 0,
+
+    0, 4,
+    4, 4,
+    4, 0,
+    0, 0,
+
+    0, 4,
+    4, 4,
+    4, 0,
+    0, 0,
+
+    0, 4,
+    4, 4,
+    4, 0,
+    0, 0
+  ];
+
+  outterWallVertexTextureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, outterWallVertexTextureCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oWvertexTextureCoords), gl.STATIC_DRAW);
+  outterWallVertexTextureCoordBuffer.itemSize = 2;
+  outterWallVertexTextureCoordBuffer.numItems = 24;
+
+  // buffer ki naredi trikotnike iz koordinat kocke
+  outterWallVertexIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, outterWallVertexIndexBuffer);
+  var oWIndices = [
+    0, 1, 2,      0, 2, 3,    // Left face
+    4, 5, 6,      4, 6, 7,    // Back face
+    8, 9, 10,     8, 10, 11,  // Right face
+    12, 13, 14,   12, 14, 15, // Front vertical face
+    16, 17, 18,   16, 18, 19, // Front Horizontal
+    20, 21, 22,   20, 22, 23,
+    24, 25, 26,   24, 26, 27  //
+  ];
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(oWIndices), gl.STATIC_DRAW);
+  outterWallVertexIndexBuffer.itemSize = 1;
+  outterWallVertexIndexBuffer.numItems = 42;
+
+
+  //koordinate velikosti/oblike sveta
   var vertexPositions = [
      -3.375, 0, -3.025,
      -3.375, 0,  4.025,
@@ -1076,7 +1183,7 @@ function drawScene() {
     playerCameraMoveX = 0;
   }
 
-  if(playerYposition + playerMovementUpDown > 4) {
+  if(playerYposition + playerMovementUpDown > 3.92) {
     playerMovementUpDown = 0;
     playerCameraMoveY = 0;
     playerCameraMoveZ = 0;
@@ -1173,6 +1280,25 @@ function drawScene() {
   // Draw the world.
   setMatrixUniforms();
   gl.drawArrays(gl.TRIANGLES, 0, worldVertexPositionBuffer.numItems);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+  // Set the texture coordinates attribute for the vertices.
+  gl.bindBuffer(gl.ARRAY_BUFFER, outterWallVertexTextureCoordBuffer);
+  gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, outterWallVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, outerWallVertexPositionBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, outerWallVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, outterWallVertexIndexBuffer);
+  setMatrixUniforms();
+  gl.drawElements(gl.TRIANGLES, outterWallVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
