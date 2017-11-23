@@ -842,10 +842,13 @@ function initZombie(idx){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function addBullet(){
-  bullets.push(new Bullet(playerMovementLR, playerMovementUpDown, playerRotation));
+  bullets.push(new Bullet(playerXposition, playerYposition, playerRotation));
+  console.log(playerXposition + " " + playerYposition);
   //console.log(playerMovementLR, playerMovementUpDown, playerRotation);
 }
 function drawBullets(){
+  
+
   for(var i in bullets){
     if(bullets[i]){
       if(bullets[i].x > 10 || bullets[i].y > 10) bullets[i] = null; // nastavi, ce gre bullet iz mape.
@@ -1747,8 +1750,9 @@ function start() {
       if (texturesLoaded == 5) {
         handleKeys();
         cameraMovement();
-        drawBullets();
+        
         drawScene();
+        drawBullets();
       }
     }, 15);
   }
