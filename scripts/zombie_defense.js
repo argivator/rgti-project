@@ -21,6 +21,10 @@ var playerVertexPositionBuffer = null;
 var playerVertexTextureCoordBuffer = null;
 var playerVertexIndexBuffer = null;
 
+var headVertexPositionBuffer = null;
+var headVertexTextureCoordBuffer = null;
+var headVertexIndexBuffer = null;
+
 var zombieVertexPositionBuffer = null;
 var zombieVertexTextureCoordBuffer = null;
 var zombieVertexIndexBuffer = null;
@@ -118,6 +122,7 @@ var grassTexture;
 var playerTexture;
 var wallTexture;
 var bulletTexture;
+var headTexture;
 
 var playerSpeed = 0.02;
 // generiranje random stevil znotraj mej prvi in drugi (tudi randomly negativno)
@@ -368,7 +373,7 @@ function initTextures() {
   playerTexture.image.onload = function() {
     handleTextureLoaded(playerTexture);
   }
-  playerTexture.image.src = "./assets/lego.png";
+  playerTexture.image.src = "./assets/clothes.jpg";
 
   // za zombije
 
@@ -395,6 +400,15 @@ function initTextures() {
     handleTextureLoaded(bulletTexture);
   }
   bulletTexture.image.src = "./assets/bullet.jpg";
+
+  // head
+
+  headTexture = gl.createTexture();
+  headTexture.image = new Image();
+  headTexture.image.onload = function(){
+    handleTextureLoaded(headTexture);
+  }
+  headTexture.image.src = "./assets/skin.jpg";
 
 }
 
@@ -792,6 +806,120 @@ function loadPlayer() {
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(playerVertexIndices), gl.STATIC_DRAW);
   playerVertexIndexBuffer.itemSize = 1;
   playerVertexIndexBuffer.numItems = 36;
+
+
+  // GLAVA IGRALCA
+
+  scP = 0.03;  //velikost kocke
+  vertexPositions = [
+     // Front face
+     -scP, 0,  scP,
+     scP, 0,  scP,
+     scP,  scP,  scP,
+     -scP,  scP,  scP,
+
+     // Back face
+     -scP, 0, -scP,
+     -scP,  scP, -scP,
+     scP,  scP, -scP,
+     scP, 0, -scP,
+
+     // Top face
+     -scP,  scP, -scP,
+     -scP,  scP,  scP,
+     scP,  scP,  scP,
+     scP,  scP, -scP,
+
+     // Bottom face
+     -scP, 0, -scP,
+     scP, 0, -scP,
+     scP, 0,  scP,
+     -scP, 0,  scP,
+
+     // Right face
+     scP, 0, -scP,
+     scP,  scP, -scP,
+     scP,  scP,  scP,
+     scP, 0,  scP,
+
+     // Left face
+     -scP, 0, -scP,
+     -scP, 0,  scP,
+     -scP,  scP,  scP,
+     -scP,  scP, -scP
+  ];
+
+  // ustcarjanje bufferja za igralca
+  headVertexPositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexPositionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositions), gl.STATIC_DRAW);
+  headVertexPositionBuffer.itemSize = 3;
+  headVertexPositionBuffer.numItems = 24;
+
+  // koordinate texture kocke (lego face)
+  textureCoords = [
+    // Front face
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+
+    // Back face
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+
+    // Top face
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+
+
+
+    // Bottom face
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+
+    // Right face
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+
+    // Left face
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0
+  ];
+
+  // ustvarjanje bufferja za lego face
+  
+  headVertexTextureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+  headVertexTextureCoordBuffer.itemSize = 2;
+  headVertexTextureCoordBuffer.numItems = 24;
+
+  // buffer ki naredi trikotnike iz koordinat kocke
+  
+  headVertexIndexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, headVertexIndexBuffer);
+  playerVertexIndices = [
+    0, 1, 2,      0, 2, 3,    // Front face
+    4, 5, 6,      4, 6, 7,    // Back face
+    8, 9, 10,     8, 10, 11,  // Top face
+    12, 13, 14,   12, 14, 15, // Bottom face
+    16, 17, 18,   16, 18, 19, // Right face
+    20, 21, 22,   20, 22, 23  // Left face
+  ];
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(playerVertexIndices), gl.STATIC_DRAW);
+  headVertexIndexBuffer.itemSize = 1;
+  headVertexIndexBuffer.numItems = 36;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1401,6 +1529,98 @@ function drawScene() {
   setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, playerVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
+  // glava
+
+  mat4.translate(mvMatrix, [0, 0.05, 0]);
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, headTexture);
+  gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
+  gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexPositionBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, headVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, headVertexIndexBuffer);
+  setMatrixUniforms();
+  gl.drawElements(gl.TRIANGLES, headVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+  // trebuh
+  mat4.translate(mvMatrix, [0.03, -0.04, 0]);
+  
+  
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, headTexture);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
+  
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, headVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, headVertexIndexBuffer);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, headVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+  // roke
+
+  mat4.translate(mvMatrix, [-0.02, 0, 0]);
+  mat4.scale(mvMatrix, [1, 1, 2]);
+  
+  
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, headTexture);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
+  
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  
+    gl.bindBuffer(gl.ARRAY_BUFFER, headVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, headVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, headVertexIndexBuffer);
+    setMatrixUniforms();
+    gl.drawElements(gl.TRIANGLES, headVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+// oci
+
+mat4.translate(mvMatrix, [0.025, 0.052, 0.01]);
+mat4.scale(mvMatrix, [0.1, 0.3, 0.1]);
+
+  // desna
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
+  gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexPositionBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, headVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, headVertexIndexBuffer);
+  setMatrixUniforms();
+  gl.drawElements(gl.TRIANGLES, headVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+  // leva
+  mat4.translate(mvMatrix, [0, 0, -0.2]);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
+  gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, headVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, headVertexPositionBuffer);
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, headVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, headVertexIndexBuffer);
+  setMatrixUniforms();
+  gl.drawElements(gl.TRIANGLES, headVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 
   // ZIDOVI
@@ -2064,7 +2284,7 @@ function start() {
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
       if(!konecIgre){
-        if (texturesLoaded == 5) {
+        if (texturesLoaded == 6) {
           handleKeys();
           cameraMovement();
   
