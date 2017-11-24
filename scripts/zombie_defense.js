@@ -985,10 +985,11 @@ function drawBullets(){
 
         rot = rot%360;
         if(rot < 0) rot = rot + 360;
+        rot = rot;
         rot = degToRad(rot);
 
 
-        var hipotenuza = 0.15;  // kako hitro hocemo, da se premika metek
+        var hipotenuza = 0.1;  // kako hitro hocemo, da se premika metek
         var deltaX;
         var deltaY;
         if(rot < 90){                   // desno gor
@@ -1060,7 +1061,7 @@ function drawBullets(){
 }
 
 function loadBullet(){
-  var scP = 0.03;  //velikost kocke
+  var scP = 0.05;  //velikost kocke
   var vertexPositions = [
      // Front face
      -scP, 0,  scP,
@@ -1291,7 +1292,7 @@ function drawScene() {
     for (b in bullets) {
       if (bullets[b] == null) continue;
 
-      var bulletRect = {x: bullets[b].x, y: bullets[b].y, width: 0.1, height: 0.1};
+      var bulletRect = {x: bullets[b].x, y: bullets[b].y, width: 0.05, height: 0.05};
       if (collision(bulletRect, wallRect1) ||
           collision(bulletRect, wallRect2) ||
           collision(bulletRect, wallRect3) ||
