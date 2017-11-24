@@ -736,7 +736,7 @@ function loadPlayer() {
  var stringObj = document.getElementById('my_cube.obj').innerHTML;
  
  var mesh=new OBJ.Mesh(stringObj);
- 
+ OBJ.initMeshBuffers
   // ustcarjanje bufferja za igralca
   playerVertexPositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexPositionBuffer);
@@ -787,13 +787,14 @@ function loadPlayer() {
   ];
 
 */
-
+  console.log(mesh.textures);
   // ustvarjanje bufferja za lego face
   playerVertexTextureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexTextureCoordBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.textures), gl.STATIC_DRAW);
   playerVertexTextureCoordBuffer.itemSize = 2;
   playerVertexTextureCoordBuffer.numItems = mesh.textures.length/2;
+ 
 
   // buffer ki naredi trikotnike iz koordinat kocke
   playerVertexIndexBuffer = gl.createBuffer();
