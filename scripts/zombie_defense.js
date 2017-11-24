@@ -118,6 +118,7 @@ var grassTexture;
 var playerTexture;
 var wallTexture;
 var bulletTexture;
+var fogTexture;
 
 var playerSpeed = 0.02;
 // generiranje random stevil znotraj mej prvi in drugi (tudi randomly negativno)
@@ -396,6 +397,15 @@ function initTextures() {
   }
   bulletTexture.image.src = "./assets/bullet.jpg";
 
+
+  //fog
+  fogTexture = gl.createTexture();
+  fogTexture.image = new Image();
+  fogTexture.image.onload = function() {
+    handleTextureLoaded(fogTexture);
+  }
+  fogTexture.image.src = "./assets/fog.jpg";
+
 }
 
 function handleTextureLoaded(texture) {
@@ -426,88 +436,48 @@ function loadWorld() {
   var oWVertexPositions = [
     -3.375, 0,  4.025,
     -3.375, 0, -3.025,
-    -3.375, 4, -3.025,
-    -3.375, 4,  4.025,
+    -3.375, 1, -3.025,
+    -3.375, 1,  4.025,
 
     -3.375, 0, -3.025,
     3.375, 0, -3.025,
-    3.375, 4, -3.025,
-    -3.375, 4, -3.025,
+    3.375, 1, -3.025,
+    -3.375, 1, -3.025,
 
     3.375, 0, -3.025,
     3.375, 0, 4.025,
-    3.375, 4, 4.025,
-    3.375, 4, -3.025,
-
-    -3.375, 0,  4.025,
-    3.375, 0,  4.025,
-    3.375, 0.01,  4.025,
-    -3.375, 0.01,  4.025,
-
-    -6, 0.01,  4.025,
-    6, 0.01, 4.025,
-    6, 0.01, 7,
-    -6, 0.01, 7,
-
-    -6, 0.01, 4.025,
-    -3.37, 0.01, 4.025,
-    -3.37, 4, 4.025,
-    -6, 4, 4.025,
-
-    3.37, 0.01, 4.025,
-    6, 0.01, 4.025,
-    6, 4, 4.025,
-    3.37, 4, 4.025
+    3.375, 1, 4.025,
+    3.375, 1, -3.025
   ];
 
   outerWallVertexPositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, outerWallVertexPositionBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oWVertexPositions), gl.STATIC_DRAW);
   outerWallVertexPositionBuffer.itemSize = 3;
-  outerWallVertexPositionBuffer.numItems = 28;
+  outerWallVertexPositionBuffer.numItems = 12;
 
   var oWvertexTextureCoords = [
-    0, 4,
-    4, 4,
-    4, 0,
     0, 0,
-
-    0, 4,
-    4, 4,
     4, 0,
-    0, 0,
-
-    0, 4,
-    4, 4,
-    4, 0,
-    0, 0,
-
-    0, 1,
     4, 1,
-    4, 0,
-    0, 0,
+    0, 1,
 
-    0, 4,
-    4, 4,
-    4, 0,
     0, 0,
-
-    0, 4,
-    4, 4,
     4, 0,
+    4, 1,
+    0, 1,
+
     0, 0,
-
-    0, 4,
-    4, 4,
     4, 0,
-    0, 0
+    4, 1,
+    0, 1
   ];
 
   outterWallVertexTextureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, outterWallVertexTextureCoordBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(oWvertexTextureCoords), gl.STATIC_DRAW);
   outterWallVertexTextureCoordBuffer.itemSize = 2;
-  outterWallVertexTextureCoordBuffer.numItems = 24;
+  outterWallVertexTextureCoordBuffer.numItems = 12;
 
   // buffer ki naredi trikotnike iz koordinat kocke
   outterWallVertexIndexBuffer = gl.createBuffer();
@@ -523,7 +493,7 @@ function loadWorld() {
   ];
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(oWIndices), gl.STATIC_DRAW);
   outterWallVertexIndexBuffer.itemSize = 1;
-  outterWallVertexIndexBuffer.numItems = 42;
+  outterWallVertexIndexBuffer.numItems = 18;
 
 
   //koordinate velikosti/oblike sveta
@@ -1192,7 +1162,7 @@ function manageLevel(){
       document.getElementById("valTekst").classList.toggle("skrito");
       document.getElementById("valSt").classList.toggle("skrito");
 
-      
+
     }, 10000);
     var sekund = 10;
     reset();
@@ -1202,9 +1172,9 @@ function manageLevel(){
       if(sekund >= 0){
         setTimeout(reset, 1000);
       }
-      
+
     }
-    
+
   }
 
 
@@ -1351,7 +1321,7 @@ function drawScene() {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.bindTexture(gl.TEXTURE_2D, fogTexture);
   gl.uniform1i(shaderProgram.samplerUniform, 0);
 
   // Set the texture coordinates attribute for the vertices.
@@ -1648,7 +1618,7 @@ function drawScene() {
             var zombieHitAudio = new Audio('./sounds/zombieHit.wav');
             zombieHitAudio.play();
           }
-          
+
         }
       }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1761,7 +1731,7 @@ function handleKeyDown(event) {
     event.preventDefault();
   }
 
-  
+
 }
 
 function handleKeyUp(event) {
@@ -2028,7 +1998,7 @@ function start() {
 
   // Only continue if WebGL is available and working
   if (gl) {
-    gl.clearColor(0.0, 0.6, 0.6, 1.0);                      // Set clear color to black, fully opaque
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);                      // Set clear color to black, fully opaque
     gl.clearDepth(1.0);                                     // Clear everything
     gl.enable(gl.DEPTH_TEST);                               // Enable depth testing
     gl.depthFunc(gl.LEQUAL);                                // Near things obscure far things
@@ -2052,19 +2022,19 @@ function start() {
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
       if(!konecIgre){
-        if (texturesLoaded == 5) {
+        if (texturesLoaded == 6) {
           handleKeys();
           cameraMovement();
-  
+
           drawScene();
           drawBullets();
           if(!levelClear){
             manageLevel();
           }
-  
+
         }
       }
-      
+
     }, 20);
   }
 }
