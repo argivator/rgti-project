@@ -37,7 +37,7 @@ var bullets = [];
 var stevecMetkov = 0; // za identifikacijo dolocenega metka
 var lahkoStrelja = true;
 
-var stMetkov = 5;
+var stMetkov = 10;
 
 
 // wall config
@@ -103,7 +103,7 @@ var playerRotation = 0;
 var camera1 = true;
 var buttonVpressed = false;   // zazna pritisk tipke V za zamenjavo kamere (da se ob pritisku kamera ne zamenja 100x)
 var buttonBpressed = false;   // zazna pritisk tipke B za zamenjavo nacina vrtenja
-var rotation8Controlls = true;
+var rotation8Controlls = false;
 
 var cameraPositionX;
 var cameraPositionY;
@@ -1889,10 +1889,19 @@ function handleKeys() {
 
   }
   if(currentlyPressedKeys[37] && !rotation8Controlls){ // left
-    playerRotation += 2;
+    if(currentlyPressedKeys[16]){
+      playerRotation += 5;
+    }else{
+      playerRotation += 2;
+    }
+    
   }
   if(currentlyPressedKeys[39]  && !rotation8Controlls){ // right
-    playerRotation -= 2;
+    if(currentlyPressedKeys[16]){
+      playerRotation -= 5;
+    }else{
+      playerRotation -= 2;
+    }
   }
 
   if (currentlyPressedKeys[37] && currentlyPressedKeys[38] && rotation8Controlls) {
@@ -1935,20 +1944,22 @@ function handleKeys() {
       if(stMetkov > 0){
         setTimeout(function(){
           lahkoStrelja = true;
-        }, 500);
+        }, 200);
       }else{
         document.getElementById("stevec").innerHTML = "RELOADING!";
         document.getElementById("metkiStevec").classList.toggle("red");
         document.getElementById("metkiStevec").classList.toggle("yellow");
+        var audio = new Audio('./sounds/reload.wav');
+        audio.play();
         setTimeout(function(){
           setTimeout(function(){
             lahkoStrelja = true;
-          }, 500);
-          stMetkov = 5;
+          }, 200);
+          stMetkov = 10;
           document.getElementById("stevec").innerHTML = stMetkov;
           document.getElementById("metkiStevec").classList.toggle("red");
           document.getElementById("metkiStevec").classList.toggle("yellow");
-        }, 1000);
+        }, 3000);
 
       }
 
