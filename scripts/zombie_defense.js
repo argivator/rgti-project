@@ -3,6 +3,7 @@ var canvas;
 var gl;
 var shaderProgram;
 
+
 var konecIgre = false;
 
 var counterShowConsole = 0;
