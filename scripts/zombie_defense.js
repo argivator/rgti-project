@@ -681,10 +681,14 @@ function loadWorld() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                        LOAD PLAYER
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 // funkcija za nalaganje igralca (zaenkrat kocke :) )
 function loadPlayer() {
   var scP = 0.05;  //velikost kocke
+/*
   var vertexPositions = [
      // Front face
      -scP, 0,  scP,
@@ -721,16 +725,26 @@ function loadPlayer() {
      -scP, 0,  scP,
      -scP,  scP,  scP,
      -scP,  scP, -scP
+     
+    
   ];
+  */
 
+ 
+ 
+ var stringObj = document.getElementById('my_cube.obj').innerHTML;
+ 
+ var mesh=new OBJ.Mesh(stringObj);
+ 
   // ustcarjanje bufferja za igralca
   playerVertexPositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexPositionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositions), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertices), gl.STATIC_DRAW);
   playerVertexPositionBuffer.itemSize = 3;
-  playerVertexPositionBuffer.numItems = 24;
+  playerVertexPositionBuffer.numItems = mesh.vertices.length/3;
 
   // koordinate texture kocke (lego face)
+/*
   var textureCoords = [
     // Front face
     0.0, 0.0,
@@ -771,16 +785,20 @@ function loadPlayer() {
     0.0, 1.0
   ];
 
+*/
+
   // ustvarjanje bufferja za lego face
   playerVertexTextureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, playerVertexTextureCoordBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.textures), gl.STATIC_DRAW);
   playerVertexTextureCoordBuffer.itemSize = 2;
-  playerVertexTextureCoordBuffer.numItems = 24;
+  playerVertexTextureCoordBuffer.numItems = mesh.textures.length/2;
 
   // buffer ki naredi trikotnike iz koordinat kocke
   playerVertexIndexBuffer = gl.createBuffer();
+  
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, playerVertexIndexBuffer);
+  /*
   var playerVertexIndices = [
     0, 1, 2,      0, 2, 3,    // Front face
     4, 5, 6,      4, 6, 7,    // Back face
@@ -789,9 +807,11 @@ function loadPlayer() {
     16, 17, 18,   16, 18, 19, // Right face
     20, 21, 22,   20, 22, 23  // Left face
   ];
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(playerVertexIndices), gl.STATIC_DRAW);
+  */
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indices), gl.STATIC_DRAW);
   playerVertexIndexBuffer.itemSize = 1;
-  playerVertexIndexBuffer.numItems = 36;
+  playerVertexIndexBuffer.numItems = mesh.indices.length;
+  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2074,3 +2094,8 @@ function start() {
 function togglePrikazPodatkov(){
   document.getElementById("pomoc").classList.toggle("skrito");
 }
+
+
+
+
+
