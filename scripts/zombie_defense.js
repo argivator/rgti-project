@@ -123,6 +123,7 @@ var playerTexture;
 var wallTexture;
 var bulletTexture;
 var headTexture;
+var eyeTexture;
 
 var playerSpeed = 0.02;
 // generiranje random stevil znotraj mej prvi in drugi (tudi randomly negativno)
@@ -409,6 +410,15 @@ function initTextures() {
     handleTextureLoaded(headTexture);
   }
   headTexture.image.src = "./assets/skin.jpg";
+
+  // oči
+
+  eyeTexture = gl.createTexture();
+  eyeTexture.image = new Image();
+  eyeTexture.image.onload = function(){
+    handleTextureLoaded(eyeTexture);
+  }
+  eyeTexture.image.src = "./assets/eye.jpg";
 
 }
 
@@ -1593,7 +1603,7 @@ mat4.scale(mvMatrix, [0.1, 0.3, 0.1]);
   // desna
 
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.bindTexture(gl.TEXTURE_2D, eyeTexture);
   gl.uniform1i(shaderProgram.samplerUniform, 0);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
@@ -1609,7 +1619,7 @@ mat4.scale(mvMatrix, [0.1, 0.3, 0.1]);
   // leva
   mat4.translate(mvMatrix, [0, 0, -0.2]);
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+  gl.bindTexture(gl.TEXTURE_2D, eyeTexture);
   gl.uniform1i(shaderProgram.samplerUniform, 0);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, headVertexTextureCoordBuffer);
@@ -2284,7 +2294,7 @@ function start() {
     // Set up to draw the scene periodically every 15ms.
     setInterval(function() {
       if(!konecIgre){
-        if (texturesLoaded == 6) {
+        if (texturesLoaded == 7) {
           handleKeys();
           cameraMovement();
   
